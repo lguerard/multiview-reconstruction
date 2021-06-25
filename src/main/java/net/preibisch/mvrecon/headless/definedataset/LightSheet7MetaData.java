@@ -49,11 +49,11 @@ import net.imglib2.type.numeric.real.FloatType;
 import net.preibisch.legacy.io.IOFunctions;
 import net.preibisch.mvrecon.fiji.datasetmanager.StackList;
 import net.preibisch.mvrecon.fiji.spimdata.SpimData2;
-import net.preibisch.mvrecon.fiji.spimdata.imgloaders.LegacyLightSheetZ1ImgLoader;
+import net.preibisch.mvrecon.fiji.spimdata.imgloaders.LegacyLightSheet7ImgLoader;
 
 import ome.units.quantity.Length;
 
-public class LightSheetZ1MetaData
+public class LightSheet7MetaData
 {
 	private String objective = "";
 	private String calUnit = "um";
@@ -151,9 +151,9 @@ public class LightSheetZ1MetaData
 
 	public boolean loadMetaData( final File cziFile, final boolean keepFileOpen )
 	{
-		final IFormatReader r = LegacyLightSheetZ1ImgLoader.instantiateImageReader();
+		final IFormatReader r = LegacyLightSheet7ImgLoader.instantiateImageReader();
 
-		if ( !LegacyLightSheetZ1ImgLoader.createOMEXMLMetadata( r ) )
+		if ( !LegacyLightSheet7ImgLoader.createOMEXMLMetadata( r ) )
 		{
 			try { r.close(); } catch (IOException e) { e.printStackTrace(); }
 			IOFunctions.println( "Creating MetaDataStore failed. Stopping" );
@@ -172,7 +172,7 @@ public class LightSheetZ1MetaData
 			if ( !( pixelType == FormatTools.UINT8 || pixelType == FormatTools.UINT16 || pixelType == FormatTools.UINT32 || pixelType == FormatTools.FLOAT ) )
 			{
 				IOFunctions.println(
-						"LightSheetZ1MetaData.loadMetaData(): PixelType " + pixelTypeString +
+						"LightSheet7MetaData.loadMetaData(): PixelType " + pixelTypeString +
 						" not supported yet. Please send me an email about this: stephan.preibisch@gmx.de - stopping." );
 
 				r.close();
@@ -195,9 +195,10 @@ public class LightSheetZ1MetaData
 		final Hashtable< String, Object > metaData = r.getGlobalMetadata();
 
 		// number each angle and tile has its own series
-		final int numAorT = r.getSeriesCount();
-		System.out.println(numAorT);
-		final int numTiles = numAorT;
+		// final int numAorT = r.getSeriesCount();
+        // IOFunctions.println (r.getSizeX());
+		// IOFunctions.println( numAorT );
+		final int numTiles = metaData.get( "Experiment|AcquisitionBlock|TilesSetup|PositionGroup|TilesX #1") * metadata.get( "Experiment|AcquisitionBlock|TilesSetup|PositionGroup|TilesY #1");
 
 		// make sure every angle has the same amount of timepoints, channels, illuminations
 		this.numT = -1;
@@ -503,7 +504,7 @@ public class LightSheetZ1MetaData
 			if ( cal == 0 )
 			{
 				cal = 1;
-				IOFunctions.println( "LightSheetZ1: Warning, calibration for dimension X seems corrupted, setting to 1." );
+				IOFunctions.println( "LightSheet7: Warning, calibration for dimension X seems corrupted, setting to 1." );
 			}
 			calX = cal;
 
@@ -514,7 +515,7 @@ public class LightSheetZ1MetaData
 			if ( cal == 0 )
 			{
 				cal = 1;
-				IOFunctions.println( "LightSheetZ1: Warning, calibration for dimension Y seems corrupted, setting to 1." );
+				IOFunctions.println( "LightSheet7: Warning, calibration for dimension Y seems corrupted, setting to 1." );
 			}
 			calY = cal;
 
@@ -525,7 +526,7 @@ public class LightSheetZ1MetaData
 			if ( cal == 0 )
 			{
 				cal = 1;
-				IOFunctions.println( "LightSheetZ1: Warning, calibration for dimension Z seems corrupted, setting to 1." );
+				IOFunctions.println( "LightSheet7: Warning, calibration for dimension Z seems corrupted, setting to 1." );
 			}
 			calZ = cal;
 		}
@@ -556,13 +557,13 @@ public class LightSheetZ1MetaData
 		return true;
 	}
 
-	public static boolean fixBioformats( final SpimData2 spimData, final File cziFile, final LightSheetZ1MetaData meta )
+	public static boolean fixBioformats( final SpimData2 spimData, final File cziFile, final LightSheet7MetaData meta )
 	{
 		final IFormatReader r;
 
 		// if we already loaded the metadata in this run, use the opened file
 		if ( meta.getReader() == null )
-			r = LegacyLightSheetZ1ImgLoader.instantiateImageReader();
+			r = LegacyLightSheet7ImgLoader.instantiateImageReader();
 		else
 			r = meta.getReader();
 
@@ -624,15 +625,15 @@ public class LightSheetZ1MetaData
 					r.openBytes( r.getIndex( z, 0, vd.getTimePointId() ), b );
 
 					if ( pixelType == FormatTools.UINT8 )
-						LegacyLightSheetZ1ImgLoader.readBytesArray( b, cursor, numPx );
+						LegacyLightSheet7ImgLoader.readBytesArray( b, cursor, numPx );
 					else if ( pixelType == FormatTools.UINT16 )
-						LegacyLightSheetZ1ImgLoader.readUnsignedShortsArray( b, cursor, numPx, isLittleEndian );
+						LegacyLightSheet7ImgLoader.readUnsignedShortsArray( b, cursor, numPx, isLittleEndian );
 					else if ( pixelType == FormatTools.INT16 )
-						LegacyLightSheetZ1ImgLoader.readSignedShortsArray( b, cursor, numPx, isLittleEndian );
+						LegacyLightSheet7ImgLoader.readSignedShortsArray( b, cursor, numPx, isLittleEndian );
 					else if ( pixelType == FormatTools.UINT32 )
-						LegacyLightSheetZ1ImgLoader.readUnsignedIntsArray( b, cursor, numPx, isLittleEndian );
+						LegacyLightSheet7ImgLoader.readUnsignedIntsArray( b, cursor, numPx, isLittleEndian );
 					else if ( pixelType == FormatTools.FLOAT )
-						LegacyLightSheetZ1ImgLoader.readFloatsArray( b, cursor, numPx, isLittleEndian );
+						LegacyLightSheet7ImgLoader.readFloatsArray( b, cursor, numPx, isLittleEndian );
 
 					if ( !allZero( slice ) )
 						break;
@@ -679,7 +680,7 @@ public class LightSheetZ1MetaData
 				builder.append( "\n" + candidate );
 			//System.out.println( "Available keys:" + builder );
 
-			IOFunctions.println( "Missing key " + key + " in LZ1 metadata" );
+			IOFunctions.println( "Missing key " + key + " in L7 metadata" );
 			return Double.NaN;
 		}
 

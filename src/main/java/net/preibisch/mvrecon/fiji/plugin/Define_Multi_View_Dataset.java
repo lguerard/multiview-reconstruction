@@ -9,12 +9,12 @@
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,6 +38,7 @@ import net.preibisch.mvrecon.fiji.ImgLib2Temp.Pair;
 import net.preibisch.mvrecon.fiji.ImgLib2Temp.ValuePair;
 import net.preibisch.mvrecon.fiji.datasetmanager.DHM;
 import net.preibisch.mvrecon.fiji.datasetmanager.FileListDatasetDefinition;
+import net.preibisch.mvrecon.fiji.datasetmanager.LightSheet7;
 import net.preibisch.mvrecon.fiji.datasetmanager.LightSheetZ1;
 import net.preibisch.mvrecon.fiji.datasetmanager.MicroManager;
 import net.preibisch.mvrecon.fiji.datasetmanager.MultiViewDatasetDefinition;
@@ -60,7 +61,7 @@ public class Define_Multi_View_Dataset implements PlugIn
 
 	final int numLinesDocumentation = 15;
 	final int numCharacters = 80;
-	
+
 	static
 	{
 		IOFunctions.printIJLog = true;
@@ -68,6 +69,7 @@ public class Define_Multi_View_Dataset implements PlugIn
 		staticDatasetDefinitions.add( new StackListLOCI() );
 		staticDatasetDefinitions.add( new StackListImageJ() );
 		staticDatasetDefinitions.add( new LightSheetZ1() );
+		staticDatasetDefinitions.add( new LightSheet7() );
 		staticDatasetDefinitions.add( new SimView() );
 		staticDatasetDefinitions.add( new MicroManager() );
 	}
@@ -75,7 +77,7 @@ public class Define_Multi_View_Dataset implements PlugIn
 	public static void supportDHM() { staticDatasetDefinitions.add( new DHM() ); }
 
 	@Override
-	public void run( String arg0 ) 
+	public void run( String arg0 )
 	{
 		defineDataset( true );
 	}
@@ -83,25 +85,25 @@ public class Define_Multi_View_Dataset implements PlugIn
 	public Pair< SpimData2, String > defineDataset( final boolean save )
 	{
 		final ArrayList< MultiViewDatasetDefinition > datasetDefinitions = new ArrayList< MultiViewDatasetDefinition >();
-		
+
 		for ( final MultiViewDatasetDefinition mvd : staticDatasetDefinitions )
 			datasetDefinitions.add( mvd.newInstance() );
-		
+
 		// verify that there are definitions
 		final int numDatasetDefinitions = datasetDefinitions.size();
-		
+
 		if ( numDatasetDefinitions == 0 )
 		{
 			IJ.log( "No Multi-View Dataset Definitions available." );
 			return null;
 		}
-		
+
 		// get their names
 		final String[] titles = new String[ numDatasetDefinitions ];
-		
+
 		for ( int i = 0; i < datasetDefinitions.size(); ++i )
 			titles[ i ] = datasetDefinitions.get( i ).getTitle();
-		
+
 		// query the dataset definition to use
 		final GenericDialogPlus gd1 = new GenericDialogPlus( "Choose method to define dataset" );
 
@@ -122,25 +124,25 @@ public class Define_Multi_View_Dataset implements PlugIn
 				formatEntry( datasetDefinitions.get( defaultDatasetDef ).getExtendedDescription(), numCharacters, numLinesDocumentation ),
 				new Font( Font.MONOSPACED, Font.PLAIN, 11 ),
 				Color.BLACK );
-						
+
 		addListeners( gd1, choice, label, datasetDefinitions );*/
-		
+
 		GUIHelper.addWebsite( gd1 );
-		
+
 		gd1.showDialog();
 		if ( gd1.wasCanceled() )
 			return null;
-		
+
 		defaultDatasetDef = gd1.getNextChoiceIndex();
 		final String xmlFileName = defaultXMLName = gd1.getNextString();
-		
+
 		// run the definition
 		final MultiViewDatasetDefinition def = datasetDefinitions.get( defaultDatasetDef );
-		
+
 		IOFunctions.println( defaultDatasetDef );
-		
+
 		final SpimData2 spimData = def.createDataset();
-		
+
 		if ( spimData == null )
 		{
 			IOFunctions.println( "Defining multi-view dataset failed." );
@@ -161,41 +163,41 @@ public class Define_Multi_View_Dataset implements PlugIn
 			}
 		}
 	}
-	
+
 	public static String[] formatEntry( String line, final int numCharacters, final int numLines )
 	{
 		if ( line == null )
 			line = "";
-		
+
 		String[] split = line.split( "\n" );
-		
+
 		if ( split.length != numLines )
 		{
 			String[] split2 = new String[ numLines ];
 
 			for ( int j = 0; j < Math.min( split.length, numLines ); ++j )
 				split2[ j ] = split[ j ];
-			
+
 			for ( int j = Math.min( split.length, numLines ); j < numLines; ++j )
 				split2[ j ] = "";
 
 			split = split2;
 		}
-		
+
 		for ( int j = 0; j < split.length; ++j )
 		{
 			String s = split[ j ];
-			
+
 			if ( s.length() > 80 )
 				s = s.substring( 0, 80 );
-			
+
 			// fill up to numCharacters + 3
 			for ( int i = s.length(); i < numCharacters + 3; ++i )
 				s = s + " ";
-			
+
 			split[ j ] = s;
 		}
-		
+
 		return split;
 	}
 
@@ -213,9 +215,9 @@ public class Define_Multi_View_Dataset implements PlugIn
 				return true;
 			}
 		} );
-		
+
 	}
-	
+
 	public static void main( String args[] )
 	{
 		StackList.defaultDirectory = "/Users/preibischs/Documents/Microscopy/SPIM/HisYFP-SPIM";
@@ -223,7 +225,7 @@ public class Define_Multi_View_Dataset implements PlugIn
 		IOFunctions.printIJLog = true;
 		new ImageJ();
 		new Define_Multi_View_Dataset().run( null );
-		
+
 		//System.exit( 0 );
 	}
 }
