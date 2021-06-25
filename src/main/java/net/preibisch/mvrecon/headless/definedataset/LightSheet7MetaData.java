@@ -35,7 +35,9 @@ import java.util.Map;
 import loci.formats.FormatTools;
 import loci.formats.IFormatReader;
 import loci.formats.Modulo;
+import loci.formats.meta.IMetadata;
 import loci.formats.meta.MetadataRetrieve;
+import loci.formats.meta.MetadataStore;
 import mpicbg.spim.data.sequence.SequenceDescription;
 import mpicbg.spim.data.sequence.Tile;
 import mpicbg.spim.data.sequence.TimePoint;
@@ -404,20 +406,30 @@ public class LightSheet7MetaData
 
 			for ( int at = 0; at < numAorT; ++at )
 			{
-				tmp = metaData.get( "Information|Image|V|View|PositionX #" + StackList.leadingZeros( Integer.toString( at+1 ), numDigits ) );
-				if ( tmp == null )
-					tmp = metaData.get( "Information|Image|V|View|PositionX #" + ( at+1 ) );
-				pos[ 0 ] = (tmp != null) ?  Double.parseDouble( tmp.toString() )  : 0.0;
+				// tmp = metaData.get( "Information|Image|V|View|PositionX #" + StackList.leadingZeros( Integer.toString( at+1 ), numDigits ) );
+				// if ( tmp == null )
+				// 	tmp = metaData.get( "Information|Image|V|View|PositionX #" + ( at+1 ) );
+				// pos[ 0 ] = (tmp != null) ?  Double.parseDouble( tmp.toString() )  : 0.0;
 
-				tmp = metaData.get( "Information|Image|V|View|PositionY #" + StackList.leadingZeros( Integer.toString( at+1 ), numDigits ) );
-				if ( tmp == null )
-					tmp = metaData.get( "Information|Image|V|View|PositionY #"  + ( at+1 ) );
-				pos[ 1 ] = (tmp != null) ?  Double.parseDouble( tmp.toString() )  : 0.0;
+				// tmp = metaData.get( "Information|Image|V|View|PositionY #" + StackList.leadingZeros( Integer.toString( at+1 ), numDigits ) );
+				// if ( tmp == null )
+				// 	tmp = metaData.get( "Information|Image|V|View|PositionY #"  + ( at+1 ) );
+				// pos[ 1 ] = (tmp != null) ?  Double.parseDouble( tmp.toString() )  : 0.0;
 
-				tmp = metaData.get( "Information|Image|V|View|PositionZ #" + StackList.leadingZeros( Integer.toString( at+1 ), numDigits ) );
-				if ( tmp == null )
-					tmp = metaData.get( "Information|Image|V|View|PositionZ #" + ( at+1 ) );
-				pos[ 2 ] = (tmp != null) ?  Double.parseDouble( tmp.toString() )  : 0.0;
+				// tmp = metaData.get( "Information|Image|V|View|PositionZ #" + StackList.leadingZeros( Integer.toString( at+1 ), numDigits ) );
+				// if ( tmp == null )
+				// 	tmp = metaData.get( "Information|Image|V|View|PositionZ #" + ( at+1 ) );
+				// pos[ 2 ] = (tmp != null) ?  Double.parseDouble(
+				// tmp.toString() )  : 0.0;
+
+				r.setSeries(at);
+
+				final IMetadata current_meta = (IMetadata) r.getMetadataStore();
+				pos[0] = current_meta.getPlanePositionX(at, current_meta.getPlaneCount(at) - 1);
+				pos[1] = current_meta.getPlanePositionY(at, current_meta.getPlaneCount(at) - 1);
+				pos[2] = current_meta.getPlanePositionZ(at, current_meta.getPlaneCount(at) - 1);
+
+
 
 				tileLocations.add( pos.clone() );
 
