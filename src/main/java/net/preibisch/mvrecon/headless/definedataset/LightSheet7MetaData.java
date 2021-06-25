@@ -195,10 +195,12 @@ public class LightSheet7MetaData
 		final Hashtable< String, Object > metaData = r.getGlobalMetadata();
 
 		// number each angle and tile has its own series
-		// final int numAorT = r.getSeriesCount();
-        // IOFunctions.println (r.getSizeX());
-		// IOFunctions.println( numAorT );
-		final int numTiles = metaData.get( "Experiment|AcquisitionBlock|TilesSetup|PositionGroup|TilesX #1") * metadata.get( "Experiment|AcquisitionBlock|TilesSetup|PositionGroup|TilesY #1");
+		final int numAorT = r.getSeriesCount();
+        IOFunctions.println (r.getSizeX());
+		IOFunctions.println( numAorT );
+		final int numTiles = numAorT;
+
+		// final int numTiles = metaData.get( "Experiment|AcquisitionBlock|TilesSetup|PositionGroup|TilesX #1") * metadata.get( "Experiment|AcquisitionBlock|TilesSetup|PositionGroup|TilesY #1");
 
 		// make sure every angle has the same amount of timepoints, channels, illuminations
 		this.numT = -1;
@@ -242,7 +244,8 @@ public class LightSheet7MetaData
 				IOFunctions.println( "Querying information for angle/tile #" + at );
 
 				// try 4 different combinations of metadata query to get size in z (there is a bug in LOCI returning the maximum size for all angle/tile)
-				double dimZ = getDouble( metaData, "Information|Image|V|View|SizeZ #" + StackList.leadingZeros( Integer.toString( at+1 ), numDigits ) );
+				// double dimZ = getDouble( metaData, "Information|Image|V|View|SizeZ #" + StackList.leadingZeros( Integer.toString( at+1 ), numDigits ) );
+				double dimZ = r.getSizeZ();
 
 				if ( Double.isNaN( dimZ ) )
 					dimZ = getDouble( metaData, "Information|Image|V|View|SizeZ #" + Integer.toString( at+1 ) );

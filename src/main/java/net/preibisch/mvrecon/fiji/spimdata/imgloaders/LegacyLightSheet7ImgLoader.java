@@ -15,6 +15,7 @@ import loci.formats.IFormatReader;
 import loci.formats.in.MetadataOptions;
 import loci.formats.in.DynamicMetadataOptions;
 import loci.formats.in.ZeissCZIReader;
+import loci.formats.MetadataTools;
 import loci.formats.meta.IMetadata;
 import loci.formats.services.OMEXMLService;
 import mpicbg.spim.data.generic.sequence.AbstractSequenceDescription;
@@ -351,34 +352,41 @@ public class LegacyLightSheet7ImgLoader extends AbstractImgFactoryImgLoader
 		MetadataOptions options = r.getMetadataOptions();
 		if (options instanceof DynamicMetadataOptions) {
 			((DynamicMetadataOptions) options).setBoolean(
-					ZeissCZIReader.ALLOW_AUTOSTITCHING_KEY, true);
+					ZeissCZIReader.ALLOW_AUTOSTITCHING_KEY, false);
 		} else {
 			System.out.println("What's wrong?");
 		}
 		r.setMetadataOptions(options);
+
+		// reader.setMetadataStore(omeMeta);
 
 		return new ChannelSeparator(r);
 	}
 
 	public static boolean createOMEXMLMetadata( final IFormatReader r )
 	{
-		try
-		{
-			final ServiceFactory serviceFactory = new ServiceFactory();
-			final OMEXMLService service = serviceFactory.getInstance( OMEXMLService.class );
-			final IMetadata omexmlMeta = service.createOMEXMLMetadata();
-			r.setMetadataStore(omexmlMeta);
-		}
-		catch (final ServiceException e)
-		{
-			e.printStackTrace();
-			return false;
-		}
-		catch (final DependencyException e)
-		{
-			e.printStackTrace();
-			return false;
-		}
+		// try
+		// {
+			// final ServiceFactory serviceFactory = new ServiceFactory();
+			// final OMEXMLService service = serviceFactory.getInstance( OMEXMLService.class );
+			// final IMetadata omexmlMeta = service.createOMEXMLMetadata();
+
+			// r.setMetadataStore(omexmlMeta);
+
+		final IMetadata omeMeta = MetadataTools.createOMEXMLMetadata();
+		r.setMetadataStore(omeMeta);
+
+		// }
+		// catch (final ServiceException e)
+		// {
+		// 	e.printStackTrace();
+		// 	return false;
+		// }
+		// catch (final DependencyException e)
+		// {
+		// 	e.printStackTrace();
+		// 	return false;
+		// }
 
 		return true;
 	}
