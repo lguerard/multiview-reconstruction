@@ -170,6 +170,9 @@ public class LightSheet7 implements MultiViewDatasetDefinition
 	 */
 	protected ArrayList< ViewSetup > createViewSetups( final LightSheet7MetaData meta )
 	{
+		IOFunctions.println("Number of angles : " + meta.numAngles());
+		IOFunctions.println("Number of tiles : " + meta.numTiles());
+		IOFunctions.println("Number of illuminations : " + meta.numIlluminations());
 		final ArrayList< Channel > channels = new ArrayList< Channel >();
 		for ( int c = 0; c < meta.numChannels(); ++c )
 			channels.add( new Channel( c, meta.channels()[ c ] ) );

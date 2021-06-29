@@ -200,9 +200,8 @@ public class LightSheet7MetaData
 
 		// number each angle and tile has its own series
 		final int numAorT = r.getSeriesCount();
-        IOFunctions.println (r.getSizeX());
-		IOFunctions.println( numAorT );
 		final int numTiles = numAorT;
+		IOFunctions.println(numAorT);
 
 		// final int numTiles = metaData.get( "Experiment|AcquisitionBlock|TilesSetup|PositionGroup|TilesX #1") * metadata.get( "Experiment|AcquisitionBlock|TilesSetup|PositionGroup|TilesY #1");
 
@@ -406,11 +405,18 @@ public class LightSheet7MetaData
 		{
 			final double[] pos = new double[3];
 			final OMEPyramidStore current_meta = (OMEPyramidStore) r.getMetadataStore();
-
+			// if (anglesList.size() != numAorT)
+			// {
 			for ( int at = 0; at < numAorT; at++ )
 			{
-				tmp = current_meta.getPlanePositionX(at, current_meta.getPlaneCount(at) - 1).value();
-				Double overlap = Double.parseDouble(metaData.get("Experiment|AcquisitionBlock|TilesSetup|PositionGroup|TileAcquisitionOverlap #1").toString());
+				Integer corrected_number_planes = new Integer(current_meta.getPlaneCount(at));
+				corrected_number_planes = corrected_number_planes / (anglesList.size() * numC);
+				tmp = current_meta.getPlanePositionX(at, corrected_number_planes - 1).value();
+				// IOFunctions.println("blabla");
+				Object test = metaData.get("Experiment|AcquisitionBlock|TilesSetup|PositionGroup|TileAcquisitionOverlap #1");
+				Double overlap = (test != null) ? Double.parseDouble(test.toString()) : 0.0;
+				// IOFunctions.println(overlap);
+
 				Double x_cal = (Double) current_meta.getPixelsPhysicalSizeX(0).value();
 				Double tmp_x = Double.parseDouble(tmp.toString());
 				if (at == 0)
@@ -420,13 +426,13 @@ public class LightSheet7MetaData
 				}
 				if (at != 0)
 				{
-					Double orig_tmp = (Double) current_meta.getPlanePositionX(0, current_meta.getPlaneCount(0) - 1).value();
+					Double orig_tmp = (Double) current_meta.getPlanePositionX(0, corrected_number_planes - 1).value();
 					Double tmp_x_cal = (Double) tmp_x * x_cal;
 					tmp_x = tmp_x_cal + orig_tmp;
 				}
 				pos[ 0 ] = (tmp_x != null) ? Double.parseDouble( tmp_x.toString() ) : 0.0;
 
-				tmp = current_meta.getPlanePositionY(at, current_meta.getPlaneCount(at) - 1).value();
+				tmp = current_meta.getPlanePositionY(at, corrected_number_planes - 1).value();
 				Double tmp_y = Double.parseDouble(tmp.toString());
 				Double y_cal = (Double) current_meta.getPixelsPhysicalSizeY(0).value();
 				if (at == 0)
@@ -436,19 +442,38 @@ public class LightSheet7MetaData
 				}
 				if (at != 0)
 				{
-					Double orig_tmp = (Double) current_meta.getPlanePositionY(0, current_meta.getPlaneCount(0) - 1).value();
+					Double orig_tmp = (Double) current_meta.getPlanePositionY(0, corrected_number_planes - 1).value();
 					Double tmp_xy_cal = (Double) tmp_y * y_cal;
 					tmp_y = tmp_xy_cal + orig_tmp;
 				}
 				pos[ 1 ] = (tmp_y != null) ? Double.parseDouble( tmp_y.toString() ) : 0.0;
 
-				tmp = current_meta.getPlanePositionZ(0, current_meta.getPlaneCount(0) - 1).value();
+				tmp = current_meta.getPlanePositionZ(0, corrected_number_planes - 1).value();
 				pos[ 2 ] = (tmp != null) ? Double.parseDouble( tmp.toString() ) : 0.0;
 
 				tileLocations.add( pos.clone() );
 
 				tiles[ at ] = "Tile" + at;
 			}
+			// }
+			// else
+			// {
+			// 	IOFunctions.println("No tiles found");
+			// 	for ( int at = 0; at < numAorT; ++at )
+			// 	{
+			// 		IOFunctions.println(at);
+			// 		Double tmp_x = getDouble( metaData, "Information|Image|V|View|PositionX #" + Integer.toString( at+1 ) );
+			// 		pos[ 0 ] = (tmp_x != null) ? tmp_x : 0.0;
+
+			// 		Double tmp_y = getDouble( metaData, "Information|Image|V|View|PositionY #" + Integer.toString( at+1 ) );
+			// 		pos[ 1 ] = (tmp_y != null) ? tmp_y : 0.0;
+
+			// 		Double tmp_z = getDouble( metaData, "Information|Image|V|View|PositionZ #" + Integer.toString( at+1 ) );
+			// 		pos[ 2 ] = (tmp_z != null) ? tmp_z : 0.0;
+
+			// 	}
+			// }
+
 		}
 		catch ( Exception e )
 		{
