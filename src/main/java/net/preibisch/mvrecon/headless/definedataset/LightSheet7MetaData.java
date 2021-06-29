@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.Arrays;
 
 import loci.formats.FormatTools;
 import loci.formats.IFormatReader;
@@ -38,6 +39,7 @@ import loci.formats.Modulo;
 import loci.formats.meta.IMetadata;
 import loci.formats.meta.MetadataRetrieve;
 import loci.formats.meta.MetadataStore;
+import loci.formats.ome.OMEPyramidStore;
 import mpicbg.spim.data.sequence.SequenceDescription;
 import mpicbg.spim.data.sequence.Tile;
 import mpicbg.spim.data.sequence.TimePoint;
@@ -403,8 +405,11 @@ public class LightSheet7MetaData
 		try
 		{
 			final double[] pos = new double[3];
+			final OMEPyramidStore current_meta = (OMEPyramidStore) r.getMetadataStore();
 
-			for ( int at = 0; at < numAorT; ++at )
+			// IOFunctions.println(numAorT);
+
+			for ( int at = 0; at < numAorT; at++ )
 			{
 				// tmp = metaData.get( "Information|Image|V|View|PositionX #" + StackList.leadingZeros( Integer.toString( at+1 ), numDigits ) );
 				// if ( tmp == null )
@@ -422,14 +427,54 @@ public class LightSheet7MetaData
 				// pos[ 2 ] = (tmp != null) ?  Double.parseDouble(
 				// tmp.toString() )  : 0.0;
 
-				r.setSeries(at);
+				// r.setSeries(at);
+				// IOFunctions.println( at );
+				tmp = current_meta.getPlanePositionX(at, current_meta.getPlaneCount(at) - 1).value();
+				Double tmp_x = Double.parseDouble(tmp.toString());
+				IOFunctions.println(tmp_x.toString());
+				if (at == 0)
+				{
+					Double half_width = Double.parseDouble(current_meta.getPixelsSizeX(0).toString()) / 2;
+					tmp_x = tmp_x - half_width;
+				}
+				if (at != 0)
+				{
+					Double orig_tmp = (Double) current_meta.getPlanePositionX(0, current_meta.getPlaneCount(0) - 1).value();
+					Double x_cal = (Double) current_meta.getPixelsPhysicalSizeX(0).value();
+					Double tmp_x_cal = (Double) tmp_x * x_cal;
+					// orig_tmp = orig_tmp / x_cal;
+					tmp_x = tmp_x_cal + orig_tmp;
+					IOFunctions.println(orig_tmp.toString());
+					IOFunctions.println(x_cal.toString());
+					IOFunctions.println(tmp_x_cal.toString());
+				}
+				pos[ 0 ] = (tmp_x != null) ? Double.parseDouble( tmp_x.toString() ) : 0.0;
 
-				final IMetadata current_meta = (IMetadata) r.getMetadataStore();
-				pos[0] = current_meta.getPlanePositionX(at, current_meta.getPlaneCount(at) - 1);
-				pos[1] = current_meta.getPlanePositionY(at, current_meta.getPlaneCount(at) - 1);
-				pos[2] = current_meta.getPlanePositionZ(at, current_meta.getPlaneCount(at) - 1);
+				tmp = current_meta.getPlanePositionY(at, current_meta.getPlaneCount(at) - 1).value();
+				Double tmp_y = Double.parseDouble(tmp.toString());
+				if (at == 0)
+				{
+					Double half_height = Double.parseDouble((current_meta.getPixelsSizeY(0)).toString()) / 2;
+					tmp_y = tmp_y - half_height ;
+				}
+				if (at != 0)
+				{
+					Double orig_tmp = (Double) current_meta.getPlanePositionY(0, current_meta.getPlaneCount(0) - 1).value();
+					Double y_cal = (Double) current_meta.getPixelsPhysicalSizeY(0).value();
+					// orig_tmp = orig_tmp / y_cal;
+					Double tmp_xy_cal = (Double) tmp_y * y_cal;
+					tmp_y = tmp_xy_cal + orig_tmp;
+				}
+				pos[ 1 ] = (tmp_y != null) ? Double.parseDouble( tmp_y.toString() ) : 0.0;
 
+				tmp = current_meta.getPlanePositionZ(0, current_meta.getPlaneCount(0) - 1).value();
+				pos[ 2 ] = (tmp != null) ? Double.parseDouble( tmp.toString() ) : 0.0;
 
+				// IOFunctions.println(pos[0]);
+				// IOFunctions.println(pos[1]);
+				// IOFunctions.println(pos[2]);
+
+				IOFunctions.println(Arrays.toString(pos));
 
 				tileLocations.add( pos.clone() );
 
@@ -448,6 +493,9 @@ public class LightSheet7MetaData
 			}
 			printMetadata = true;
 		}
+
+		// IOFunctions.println(tiles);
+		// IOFunctions.println(tileLocations);
 
 		// get the axis of rotation
 		try
@@ -624,6 +672,8 @@ public class LightSheet7MetaData
 				final int height = (int)vd.getViewSetup().getSize().dimension( 1 );
 				final int depth = (int)vd.getViewSetup().getSize().dimension( 2 );
 				final int numPx = width * height;
+
+				IOFunctions.println(Arrays.toString(t.getLocation()));
 
 				// set the right tile
 				r.setSeries( t.getId() );

@@ -9,12 +9,12 @@
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -22,6 +22,8 @@
  */
 package net.preibisch.mvrecon.fiji.datasetmanager;
 
+import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,7 +46,7 @@ public class DatasetCreationUtils
 
 	/**
 	 * Assembles the {@link ViewRegistration} object consisting of a list of {@link ViewRegistration}s for all {@link ViewDescription}s that are present
-	 * 
+	 *
 	 * @param viewDescriptionList - map from View IDs to View Descriptions
 	 * @param minResolution - the smallest resolution in any dimension (distance between two pixels in the output image will be that wide)
 	 * @return the View Registrations
@@ -52,32 +54,42 @@ public class DatasetCreationUtils
 	public static ViewRegistrations createViewRegistrations( final Map< ViewId, ViewDescription > viewDescriptionList, final double minResolution )
 	{
 		final HashMap< ViewId, ViewRegistration > viewRegistrationMap = new HashMap< ViewId, ViewRegistration >();
-	
+
 		for ( final ViewDescription viewDescription : viewDescriptionList.values() )
 			if ( viewDescription.isPresent() )
 			{
 				final ViewRegistration viewRegistration = new ViewRegistration( viewDescription.getTimePointId(), viewDescription.getViewSetupId() );
-				final VoxelDimensions voxelSize = viewDescription.getViewSetup().getVoxelSize(); 
-	
+				final VoxelDimensions voxelSize = viewDescription.getViewSetup().getVoxelSize();
+
 				final double calX = voxelSize.dimension( 0 ) / minResolution;
 				final double calY = voxelSize.dimension( 1 ) / minResolution;
 				final double calZ = voxelSize.dimension( 2 ) / minResolution;
-	
-				// 1st view transform: calibration := scaling to isotropic resolution (units of length -> minResolution) 
+
+				IOFunctions.println("Voxel Size : " + voxelSize.dimension(0) + " " + voxelSize.dimension(1) + " " + voxelSize.dimension(2));
+				IOFunctions.println(Double.toString(minResolution));
+				IOFunctions.println("Calibration : " + calX + " " + calY + " " + calZ);
+
+				// 1st view transform: calibration := scaling to isotropic resolution (units of length -> minResolution)
 				final AffineTransform3D m = new AffineTransform3D();
 				m.set(  calX, 0.0f, 0.0f, 0.0f,
 						0.0f, calY, 0.0f, 0.0f,
 						0.0f, 0.0f, calZ, 0.0f );
 				final ViewTransform vt = new ViewTransformAffine( "calibration", m );
 				viewRegistration.preconcatenateTransform( vt );
-	
+
 				// 2nd view transform: translation to tile location (Tile has physical unit locations -> we transform to minResolution units)
 				final Tile tile = viewDescription.getViewSetup().getAttribute( Tile.class );
 				if (tile.hasLocation()){
 					final double shiftX = tile.getLocation()[0] / voxelSize.dimension( 0 ) * calX;
 					final double shiftY = tile.getLocation()[1] / voxelSize.dimension( 1 ) * calY;
 					final double shiftZ = tile.getLocation()[2] / voxelSize.dimension( 2 ) * calZ;
-	
+
+					IOFunctions.println("Test");
+					IOFunctions.println(Arrays.toString(tile.getLocation()));
+					IOFunctions.println(shiftX);
+					IOFunctions.println(shiftY);
+					IOFunctions.println(shiftZ);
+
 					final AffineTransform3D m2 = new AffineTransform3D();
 					m2.set( 1.0f, 0.0f, 0.0f, shiftX,
 							0.0f, 1.0f, 0.0f, shiftY,
@@ -93,7 +105,7 @@ public class DatasetCreationUtils
 	/*
 	 * Finds the minimal resolution in between all view descriptions, and makes sure all data is available
 	 * Should be called before registration to make sure all metadata is right
-	 * 
+	 *
 	 * @return - minimal resolution in all dimensions
 	 */
 	public static double minResolution(
@@ -104,7 +116,7 @@ public class DatasetCreationUtils
 
 		for ( final ViewId viewId : viewIdsToProcess )
 		{
-			final ViewDescription vd = sequenceDescription.getViewDescription( 
+			final ViewDescription vd = sequenceDescription.getViewDescription(
 					viewId.getTimePointId(), viewId.getViewSetupId() );
 
 			if ( !vd.isPresent() )
