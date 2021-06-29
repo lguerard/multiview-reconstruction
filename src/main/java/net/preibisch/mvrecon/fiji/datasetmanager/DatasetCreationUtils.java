@@ -65,10 +65,6 @@ public class DatasetCreationUtils
 				final double calY = voxelSize.dimension( 1 ) / minResolution;
 				final double calZ = voxelSize.dimension( 2 ) / minResolution;
 
-				IOFunctions.println("Voxel Size : " + voxelSize.dimension(0) + " " + voxelSize.dimension(1) + " " + voxelSize.dimension(2));
-				IOFunctions.println(Double.toString(minResolution));
-				IOFunctions.println("Calibration : " + calX + " " + calY + " " + calZ);
-
 				// 1st view transform: calibration := scaling to isotropic resolution (units of length -> minResolution)
 				final AffineTransform3D m = new AffineTransform3D();
 				m.set(  calX, 0.0f, 0.0f, 0.0f,
@@ -83,12 +79,6 @@ public class DatasetCreationUtils
 					final double shiftX = tile.getLocation()[0] / voxelSize.dimension( 0 ) * calX;
 					final double shiftY = tile.getLocation()[1] / voxelSize.dimension( 1 ) * calY;
 					final double shiftZ = tile.getLocation()[2] / voxelSize.dimension( 2 ) * calZ;
-
-					IOFunctions.println("Test");
-					IOFunctions.println(Arrays.toString(tile.getLocation()));
-					IOFunctions.println(shiftX);
-					IOFunctions.println(shiftY);
-					IOFunctions.println(shiftZ);
 
 					final AffineTransform3D m2 = new AffineTransform3D();
 					m2.set( 1.0f, 0.0f, 0.0f, shiftX,

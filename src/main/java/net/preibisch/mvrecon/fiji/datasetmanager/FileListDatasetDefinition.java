@@ -572,8 +572,6 @@ public class FileListDatasetDefinition implements MultiViewDatasetDefinition
 
 									Tile tI = new Tile( tileId, tileId.toString() );
 
-									IOFunctions.println(Arrays.toString(tI.getLocation()));
-
 									if (state.getDetailMap().get( Tile.class ) != null && state.getDetailMap().get( Tile.class ).containsKey( tileId ))
 									{
 										TileInfo tInfoI = (TileInfo) state.getDetailMap().get( Tile.class ).get( tileId );
