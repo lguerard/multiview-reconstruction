@@ -471,6 +471,10 @@ public class LightSheet7MetaData
 					Double tmp_z = getDouble( metaData, "Information|Image|V|View|PositionZ #" + Integer.toString( at+1 ) );
 					pos[ 2 ] = (tmp_z != null) ? tmp_z : 0.0;
 
+					tileLocations.add( pos.clone() );
+
+					tiles[ at ] = "Tile" + at;
+					IOFunctions.println(Arrays.toString(pos));
 				}
 			}
 
