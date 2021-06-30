@@ -410,24 +410,6 @@ public class LightSheet7MetaData
 
 			for ( int at = 0; at < numAorT; at++ )
 			{
-				// tmp = metaData.get( "Information|Image|V|View|PositionX #" + StackList.leadingZeros( Integer.toString( at+1 ), numDigits ) );
-				// if ( tmp == null )
-				// 	tmp = metaData.get( "Information|Image|V|View|PositionX #" + ( at+1 ) );
-				// pos[ 0 ] = (tmp != null) ?  Double.parseDouble( tmp.toString() )  : 0.0;
-
-				// tmp = metaData.get( "Information|Image|V|View|PositionY #" + StackList.leadingZeros( Integer.toString( at+1 ), numDigits ) );
-				// if ( tmp == null )
-				// 	tmp = metaData.get( "Information|Image|V|View|PositionY #"  + ( at+1 ) );
-				// pos[ 1 ] = (tmp != null) ?  Double.parseDouble( tmp.toString() )  : 0.0;
-
-				// tmp = metaData.get( "Information|Image|V|View|PositionZ #" + StackList.leadingZeros( Integer.toString( at+1 ), numDigits ) );
-				// if ( tmp == null )
-				// 	tmp = metaData.get( "Information|Image|V|View|PositionZ #" + ( at+1 ) );
-				// pos[ 2 ] = (tmp != null) ?  Double.parseDouble(
-				// tmp.toString() )  : 0.0;
-
-				// r.setSeries(at);
-				// IOFunctions.println( at );
 				tmp = current_meta.getPlanePositionX(at, current_meta.getPlaneCount(at) - 1).value();
 				Double tmp_x = Double.parseDouble(tmp.toString());
 				IOFunctions.println(tmp_x.toString());
@@ -457,36 +439,6 @@ public class LightSheet7MetaData
 					tmp_y = tmp_y - half_height ;
 				}
 			}
-			else
-			{
-				IOFunctions.println("No tiles found");
-				for ( int at = 0; at < numAorT; ++at )
-				{
-					Double orig_tmp = (Double) current_meta.getPlanePositionY(0, current_meta.getPlaneCount(0) - 1).value();
-					Double y_cal = (Double) current_meta.getPixelsPhysicalSizeY(0).value();
-					// orig_tmp = orig_tmp / y_cal;
-					Double tmp_xy_cal = (Double) tmp_y * y_cal;
-					tmp_y = tmp_xy_cal + orig_tmp;
-				}
-				pos[ 1 ] = (tmp_y != null) ? Double.parseDouble( tmp_y.toString() ) : 0.0;
-
-					Double tmp_y = getDouble( metaData, "Information|Image|V|View|PositionY #" + Integer.toString( at+1 ) );
-					pos[ 1 ] = (tmp_y != null) ? tmp_y : 0.0;
-
-				// IOFunctions.println(pos[0]);
-				// IOFunctions.println(pos[1]);
-				// IOFunctions.println(pos[2]);
-
-				IOFunctions.println(Arrays.toString(pos));
-
-				tileLocations.add( pos.clone() );
-
-					tileLocations.add( pos.clone() );
-
-					tiles[ at ] = "Tile" + at;
-					IOFunctions.println(Arrays.toString(pos));
-				}
-			}
 
 		}
 		catch ( Exception e )
@@ -501,9 +453,6 @@ public class LightSheet7MetaData
 			}
 			printMetadata = true;
 		}
-
-		// IOFunctions.println(tiles);
-		// IOFunctions.println(tileLocations);
 
 		// get the axis of rotation
 		try
