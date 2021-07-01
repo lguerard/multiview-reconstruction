@@ -181,6 +181,11 @@ public class LightSheet7 implements MultiViewDatasetDefinition
 
 		IOFunctions.println("Before tiles");
 		final ArrayList< Tile > tiles = new ArrayList<>();
+		// Integer tile_number = meta.numTiles();
+		// if (tile_number == meta.numAngles())
+		// {
+		// 	tile_number = 1;
+		// }
 		for ( int i = 0; i < meta.numTiles(); i++ )
 		{
 			Tile t = new Tile( i, meta.tiles()[  i], meta.tileLocations().get( i ) );
@@ -290,10 +295,16 @@ public class LightSheet7 implements MultiViewDatasetDefinition
 		for ( int a = 0; a < meta.numAngles(); ++a )
 			gd.addStringField( "Angle_" + (a+1) + ":", meta.angles()[ a ] );
 
-		gd.addMessage( "Tiles (" + meta.numTiles() + " present)", new Font( Font.SANS_SERIF, Font.BOLD, 13 ) );
+		Integer tile_number = meta.numTiles();
+		if (tile_number == meta.numAngles())
+		{
+			tile_number = 1;
+		}
+
+		gd.addMessage( "Tiles (" + tile_number + " present)", new Font( Font.SANS_SERIF, Font.BOLD, 13 ) );
 		gd.addMessage( "" );
 
-		for ( int t = 0; t < meta.numTiles(); ++t )
+		for ( int t = 0; t < tile_number; ++t )
 			gd.addStringField( "Tile_" + (t+1) + ":", meta.tiles()[ t ] );
 
 		gd.addMessage( "Channels (" + meta.numChannels() + " present)", new Font( Font.SANS_SERIF, Font.BOLD, 13 ) );
@@ -354,7 +365,7 @@ public class LightSheet7 implements MultiViewDatasetDefinition
 		for ( int a = 0; a < meta.numAngles(); ++a )
 			meta.angles()[ a ] = gd.getNextString();
 
-		for ( int t = 0; t < meta.numTiles(); ++t )
+		for ( int t = 0; t < tile_number; ++t )
 			meta.tiles()[ t ] = gd.getNextString();
 
 		for ( int c = 0; c < meta.numChannels(); ++c )

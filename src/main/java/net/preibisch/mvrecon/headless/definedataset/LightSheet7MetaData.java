@@ -456,8 +456,8 @@ public class LightSheet7MetaData
 					Double tmp_x = Double.parseDouble(tmp.toString());
 					if (at == 0)
 					{
-						Object number_x_tiles = metaData.get("Experiment|AcquisitionBlock|TilesSetup|PositionGroup|TilesX #1");
-						if (Double.parseDouble(number_x_tiles.toString()) > 1)
+						Double number_x_tiles = getDouble(metaData, "Experiment|AcquisitionBlock|TilesSetup|PositionGroup|TilesX #1");
+						if (number_x_tiles > 1)
 						{
 							Double half_width = Double.parseDouble(current_meta.getPixelsSizeX(0).toString()) / 2;
 							tmp_x = tmp_x - ( half_width * (1 - overlap) * x_cal);
@@ -476,8 +476,8 @@ public class LightSheet7MetaData
 					Double y_cal = (Double) current_meta.getPixelsPhysicalSizeY(0).value();
 					if (at == 0)
 					{
-						Object number_y_tiles = metaData.get("Experiment|AcquisitionBlock|TilesSetup|PositionGroup|TilesY #1");
-						if (Double.parseDouble(number_y_tiles.toString()) > 1)
+						Double number_y_tiles = getDouble(metaData, "Experiment|AcquisitionBlock|TilesSetup|PositionGroup|TilesY #1");
+						if (number_y_tiles > 1)
 						{
 							Double half_height = Double.parseDouble((current_meta.getPixelsSizeY(0)).toString()) / 2;
 							tmp_y = tmp_y - ( half_height * (1 - overlap) * y_cal) ;
@@ -501,23 +501,37 @@ public class LightSheet7MetaData
 			}
 			else
 			{
-				IOFunctions.println("No tiles found");
-				for ( int at = 0; at < numAorT; ++at )
+				if (numAorT == 1)
 				{
-					IOFunctions.println(at);
-					Double tmp_x = getDouble( metaData, "Information|Image|V|View|PositionX #" + Integer.toString( at+1 ) );
-					pos[ 0 ] = (tmp_x != null) ? tmp_x : 0.0;
 
-					Double tmp_y = getDouble( metaData, "Information|Image|V|View|PositionY #" + Integer.toString( at+1 ) );
-					pos[ 1 ] = (tmp_y != null) ? tmp_y : 0.0;
-
-					Double tmp_z = getDouble( metaData, "Information|Image|V|View|PositionZ #" + Integer.toString( at+1 ) );
-					pos[ 2 ] = (tmp_z != null) ? tmp_z : 0.0;
-
+					IOFunctions.println("Only 1 tile and angle found");
+					pos[ 0 ] = 0.0;
+					pos[ 1 ] = 0.0;
+					pos[ 2 ] = 0.0;
 					tileLocations.add( pos.clone() );
 
-					tiles[ at ] = "Tile" + at;
-					IOFunctions.println(Arrays.toString(pos));
+					tiles[ 0 ] = "Tile" + 0;
+				}
+				else
+				{
+					IOFunctions.println("No tiles found");
+					for ( int at = 0; at < numAorT; ++at )
+					{
+						IOFunctions.println(at);
+						Double tmp_x = getDouble( metaData, "Information|Image|V|View|PositionX #" + Integer.toString( at+1 ) );
+						pos[ 0 ] = (tmp_x != null) ? tmp_x : 0.0;
+
+						Double tmp_y = getDouble( metaData, "Information|Image|V|View|PositionY #" + Integer.toString( at+1 ) );
+						pos[ 1 ] = (tmp_y != null) ? tmp_y : 0.0;
+
+						Double tmp_z = getDouble( metaData, "Information|Image|V|View|PositionZ #" + Integer.toString( at+1 ) );
+						pos[ 2 ] = (tmp_z != null) ? tmp_z : 0.0;
+
+						tileLocations.add( pos.clone() );
+
+						tiles[ at ] = "Tile" + at;
+						IOFunctions.println(Arrays.toString(pos));
+					}
 				}
 >>>>>>> wip-multiview
 			}
