@@ -421,8 +421,12 @@ public class LightSheet7MetaData
 					Double tmp_x = Double.parseDouble(tmp.toString());
 					if (at == 0)
 					{
-						Double half_width = Double.parseDouble(current_meta.getPixelsSizeX(0).toString()) / 2;
-						tmp_x = tmp_x - ( half_width * (1 - overlap) * x_cal);
+						Object number_x_tiles = metaData.get("Experiment|AcquisitionBlock|TilesSetup|PositionGroup|TilesX #1");
+						if (Double.parseDouble(number_x_tiles.toString()) > 1)
+						{
+							Double half_width = Double.parseDouble(current_meta.getPixelsSizeX(0).toString()) / 2;
+							tmp_x = tmp_x - ( half_width * (1 - overlap) * x_cal);
+						}
 					}
 					if (at != 0)
 					{
@@ -437,8 +441,12 @@ public class LightSheet7MetaData
 					Double y_cal = (Double) current_meta.getPixelsPhysicalSizeY(0).value();
 					if (at == 0)
 					{
-						Double half_height = Double.parseDouble((current_meta.getPixelsSizeY(0)).toString()) / 2;
-						tmp_y = tmp_y - ( half_height * (1 - overlap) * y_cal) ;
+						Object number_y_tiles = metaData.get("Experiment|AcquisitionBlock|TilesSetup|PositionGroup|TilesY #1");
+						if (Double.parseDouble(number_y_tiles.toString()) > 1)
+						{
+							Double half_height = Double.parseDouble((current_meta.getPixelsSizeY(0)).toString()) / 2;
+							tmp_y = tmp_y - ( half_height * (1 - overlap) * y_cal) ;
+						}
 					}
 					if (at != 0)
 					{
