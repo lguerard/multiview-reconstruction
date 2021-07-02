@@ -9,12 +9,12 @@
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -135,14 +135,14 @@ public class FileListDatasetDefinition implements MultiViewDatasetDefinition
 		fileListChoosers.add( new WildcardFileListChooser() );
 		//fileListChoosers.add( new SimpleDirectoryFileListChooser() );
 	}
-	
+
 	private static interface FileListChooser
 	{
 		public List<File> getFileList();
 		public String getDescription();
 		public FileListChooser getNewInstance();
 	}
-	
+
 	private static class WildcardFileListChooser implements FileListChooser
 	{
 
@@ -153,8 +153,8 @@ public class FileListDatasetDefinition implements MultiViewDatasetDefinition
 				+ "Wildcard (*) expressions are allowed. <br />"
 				+ "e.g. '/Users/spim/data/spim_TL*_Angle*.tif' <br /><br />"
 				+ "</html>";
-		
-		
+
+
 		private static String previewFiles(List<File> files){
 			StringBuilder sb = new StringBuilder();
 			sb.append("<html><h2> selected files </h2>");
@@ -184,7 +184,7 @@ public class FileListDatasetDefinition implements MultiViewDatasetDefinition
 				addMessageAsJLabel(previewFiles( new ArrayList<>()), gdp,  GUIHelper.smallStatusFont);
 
 				JLabel lab = (JLabel)gdp.getComponent( 5 );
-				TextField num = (TextField)gdp.getComponent( 4 ); 
+				TextField num = (TextField)gdp.getComponent( 4 );
 				Panel pan = (Panel)gdp.getComponent( 2 );
 
 				num.addTextListener( new TextListener()
@@ -280,9 +280,9 @@ public class FileListDatasetDefinition implements MultiViewDatasetDefinition
 
 		@Override
 		public FileListChooser getNewInstance() {return new WildcardFileListChooser();}
-		
+
 	}
-	
+
 	private static class SimpleDirectoryFileListChooser implements FileListChooser
 	{
 
@@ -290,7 +290,7 @@ public class FileListDatasetDefinition implements MultiViewDatasetDefinition
 		public List< File > getFileList()
 		{
 			List< File > res = new ArrayList<File>();
-			
+
 			DirectoryChooser dc = new DirectoryChooser ( "pick directory" );
 			if (dc.getDirectory() != null)
 				try
@@ -312,7 +312,7 @@ public class FileListDatasetDefinition implements MultiViewDatasetDefinition
 							}
 						}
 						).map( p -> p.toFile() ).collect( Collectors.toList() );
-					
+
 				}
 				catch ( IOException e )
 				{
@@ -320,11 +320,11 @@ public class FileListDatasetDefinition implements MultiViewDatasetDefinition
 					e.printStackTrace();
 				}
 			return res;
-			
-			
+
+
 		}
-		
-		
+
+
 
 		@Override
 		public String getDescription()
@@ -339,14 +339,14 @@ public class FileListDatasetDefinition implements MultiViewDatasetDefinition
 			// TODO Auto-generated method stub
 			return new SimpleDirectoryFileListChooser();
 		}
-		
+
 	}
-	
+
 	public static void addMessageAsJLabel(String msg, GenericDialog gd)
 	{
 		addMessageAsJLabel(msg, gd, null);
 	}
-	
+
 	public static void addMessageAsJLabel(String msg, GenericDialog gd, Font font)
 	{
 		addMessageAsJLabel(msg, gd, font, null);
@@ -372,19 +372,19 @@ public class FileListDatasetDefinition implements MultiViewDatasetDefinition
 			gd.remove(msgC);
 		}
 	}
-	
-		
-	
+
+
+
 	public static List<File> getFilesFromPattern(String pattern, final long fileMinSize)
-	{		
-		Pair< String, String > pAndp = splitIntoPathAndPattern( pattern, GLOB_SPECIAL_CHARS );		
+	{
+		Pair< String, String > pAndp = splitIntoPathAndPattern( pattern, GLOB_SPECIAL_CHARS );
 		String path = pAndp.getA();
 		String justPattern = pAndp.getB();
-		
+
 		PathMatcher pm;
 		try
 		{
-		pm = FileSystems.getDefault().getPathMatcher( "glob:" + 
+		pm = FileSystems.getDefault().getPathMatcher( "glob:" +
 				((justPattern.length() == 0) ? path : String.join("/", path, justPattern )) );
 		}
 		catch (PatternSyntaxException e) {
@@ -392,14 +392,14 @@ public class FileListDatasetDefinition implements MultiViewDatasetDefinition
 			// if we do not catch this, we will keep logging exceptions e.g. while user is typing something like [0-9]
 			return new ArrayList<>();
 		}
-		
+
 		List<File> paths = new ArrayList<>();
-		
+
 		if (!new File( path ).exists())
 			return paths;
-		
+
 		int numLevels = justPattern.split( "/" ).length;
-						
+
 		try
 		{
 			Files.walk( Paths.get( path ), numLevels ).filter( p -> pm.matches( p ) ).filter( new Predicate< Path >()
@@ -411,7 +411,7 @@ public class FileListDatasetDefinition implements MultiViewDatasetDefinition
 					// ignore directories
 					if (Files.isDirectory( t ))
 						return false;
-					
+
 					try
 					{
 						return Files.size( t ) > fileMinSize;
@@ -429,45 +429,45 @@ public class FileListDatasetDefinition implements MultiViewDatasetDefinition
 		}
 		catch ( IOException e )
 		{
-			
+
 		}
-		
+
 		Collections.sort( paths );
 		return paths;
 	}
-	
+
 	private static SpimData2 buildSpimData( FileListViewDetectionState state, boolean withVirtualLoader )
 	{
-		
+
 		//final Map< Integer, List< Pair< File, Pair< Integer, Integer > > > > fm = tileIdxMap;
 		//fm.forEach( (k,v ) -> {System.out.println( k ); v.forEach( p -> {System.out.print(p.getA() + ""); System.out.print(p.getB().getA().toString() + " "); System.out.println(p.getB().getB().toString());} );});
-		
-		
+
+
 		Map< Integer, List< Pair< File, Pair< Integer, Integer > > > > tpIdxMap = state.getIdMap().get( TimePoint.class );
 		Map< Integer, List< Pair< File, Pair< Integer, Integer > > > > channelIdxMap = state.getIdMap().get( Channel.class );
 		Map< Integer, List< Pair< File, Pair< Integer, Integer > > > > illumIdxMap = state.getIdMap().get( Illumination.class );
 		Map< Integer, List< Pair< File, Pair< Integer, Integer > > > > tileIdxMap = state.getIdMap().get( Tile.class );
 		Map< Integer, List< Pair< File, Pair< Integer, Integer > > > > angleIdxMap = state.getIdMap().get( Angle.class );
-		
-		
+
+
 		List<Integer> timepointIndexList = new ArrayList<>(tpIdxMap.keySet());
 		List<Integer> channelIndexList = new ArrayList<>(channelIdxMap.keySet());
 		List<Integer> illuminationIndexList = new ArrayList<>(illumIdxMap.keySet());
 		List<Integer> tileIndexList = new ArrayList<>(tileIdxMap.keySet());
 		List<Integer> angleIndexList = new ArrayList<>(angleIdxMap.keySet());
-		
+
 		Collections.sort( timepointIndexList );
 		Collections.sort( channelIndexList );
 		Collections.sort( illuminationIndexList );
 		Collections.sort( tileIndexList );
 		Collections.sort( angleIndexList );
-		
+
 		int nTimepoints = timepointIndexList.size();
 		int nChannels = channelIndexList.size();
 		int nIlluminations = illuminationIndexList.size();
 		int nTiles = tileIndexList.size();
 		int nAngles = angleIndexList.size();
-		
+
 		List<ViewSetup> viewSetups = new ArrayList<>();
 		List<ViewId> missingViewIds = new ArrayList<>();
 		List<TimePoint> timePoints = new ArrayList<>();
@@ -483,57 +483,57 @@ public class FileListDatasetDefinition implements MultiViewDatasetDefinition
 						boolean addedViewSetup = false;
 						for (Integer tp = 0; tp < nTimepoints; tp++)
 						{
-														
+
 							List< Pair< File, Pair< Integer, Integer > > > viewList;
 							viewList = FileListDatasetDefinitionUtil.listIntersect( channelIdxMap.get( channelIndexList.get( c ) ), angleIdxMap.get( angleIndexList.get( a ) ) );
 							viewList = FileListDatasetDefinitionUtil.listIntersect( viewList, tileIdxMap.get( tileIndexList.get( ti ) ) );
 							viewList = FileListDatasetDefinitionUtil.listIntersect( viewList, illumIdxMap.get( illuminationIndexList.get( i ) ) );
-							
+
 							// we only consider combinations of angle, illum, channel, tile that are in at least one timepoint
 							if (viewList.size() == 0)
 								continue;
-							
+
 							viewList = FileListDatasetDefinitionUtil.listIntersect( viewList, tpIdxMap.get( timepointIndexList.get( tp ) ) );
 
-														
+
 							Integer tpId = timepointIndexList.get( tp );
 							Integer channelId = channelIndexList.get( c );
 							Integer illuminationId = illuminationIndexList.get( i );
 							Integer angleId = angleIndexList.get( a );
 							Integer tileId = tileIndexList.get( ti );
-							
+
 							System.out.println( "VS: " + viewSetupId );
-							
+
 							if (viewList.size() < 1)
 							{
 								System.out.println( "Missing View: ch" + c +" a"+ a + " ti" + ti + " tp"+ tp + " i" + i );
 								int missingSetup = addedViewSetup ? viewSetupId - 1 : viewSetupId;
 								missingViewIds.add( new ViewId( tpId, missingSetup ) );
-								
+
 							}
 							else if (viewList.size() > 1)
 								System.out.println( "Error: more than one View: ch" + c +" a"+ a + " ti" + ti + " tp"+ tp + " i" + i );
 							else
 							{
 								System.out.println( "Found View: ch" + c +" a"+ a + " ti" + ti + " tp"+ tp + " i" + i + " in file " + viewList.get( 0 ).getA().getAbsolutePath());
-								
+
 								TimePoint tpI = new TimePoint( tpId );
 								if (!timePoints.contains( tpI ))
 									timePoints.add( tpI );
-								
+
 								if (!addedViewSetup)
 									ViewIDfileMap.put( new ValuePair< Integer, Integer >( tpId, viewSetupId ), viewList.get( 0 ) );
 								else
 									ViewIDfileMap.put( new ValuePair< Integer, Integer >( tpId, viewSetupId - 1 ), viewList.get( 0 ) );
-								
-								
+
+
 								// we have not visited this combination before
 								if (!addedViewSetup)
 								{
 									Illumination illumI = new Illumination( illuminationId, illuminationId.toString() );
-									
+
 									Channel chI = new Channel( channelId, channelId.toString() );
-									
+
 									if (state.getDetailMap().get( Channel.class ) != null && state.getDetailMap().get( Channel.class ).containsKey( channelId))
 									{
 										ChannelInfo chInfoI = (ChannelInfo) state.getDetailMap().get( Channel.class ).get( channelId );
@@ -546,11 +546,11 @@ public class FileListDatasetDefinition implements MultiViewDatasetDefinition
 									}
 
 									Angle aI = new Angle( angleId, angleId.toString() );
-									
+
 									if (state.getDetailMap().get( Angle.class ) != null && state.getDetailMap().get( Angle.class ).containsKey( angleId ))
 									{
 										AngleInfo aInfoI = (AngleInfo) state.getDetailMap().get( Angle.class ).get( angleId );
-										
+
 										if (aInfoI.angle != null && aInfoI.axis != null)
 										{
 											try
@@ -586,8 +586,8 @@ public class FileListDatasetDefinition implements MultiViewDatasetDefinition
 													tInfoI.locationZ != null ? tInfoI.locationZ : 0} );
 									}
 
-									ViewSetup vs = new ViewSetup( viewSetupId, 
-													viewSetupId.toString(), 
+									ViewSetup vs = new ViewSetup( viewSetupId,
+													viewSetupId.toString(),
 													state.getDimensionMap().get( (viewList.get( 0 ))).getA(),
 													state.getDimensionMap().get( (viewList.get( 0 ))).getB(),
 													tI, chI, aI, illumI );
@@ -595,17 +595,17 @@ public class FileListDatasetDefinition implements MultiViewDatasetDefinition
 									viewSetups.add( vs );
 									viewSetupId++;
 									addedViewSetup = true;
-								
+
 								}
-								
+
 							}
 						}
 					}
-		
-		
-		
+
+
+
 		SequenceDescription sd = new SequenceDescription( new TimePoints( timePoints ), viewSetups , null, new MissingViews( missingViewIds ));
-		
+
 		HashMap<BasicViewDescription< ? >, Pair<File, Pair<Integer, Integer>>> fileMap = new HashMap<>();
 		for (Pair<Integer, Integer> k : ViewIDfileMap.keySet())
 		{
@@ -774,11 +774,11 @@ public class FileListDatasetDefinition implements MultiViewDatasetDefinition
 		{
 			int numTile = state.getAccumulateMap( Tile.class ).size();
 			inFileSummarySB.append( "<p style=\"color:green\">" + numTile + " Tiles found within files </p>" );
-			
+
 		}
-		
+
 		//inFileSummarySB.append( "<br />" );
-		
+
 		// summary angle
 		if ( state.getMultiplicityMap().get( Angle.class ) == CheckResult.SINGLE )
 		{
@@ -801,13 +801,13 @@ public class FileListDatasetDefinition implements MultiViewDatasetDefinition
 		inFileSummarySB.append( "</html>" );
 
 		GenericDialogPlus gd = new GenericDialogPlus("Define Metadata for Views");
-		
+
 		//gd.addMessage( "<html> <h1> View assignment </h1> </html> ");
 		//addMessageAsJLabel( "<html> <h1> View assignment </h1> </html> ", gd);
-		
+
 		//gd.addMessage( inFileSummarySB.toString() );
 		addMessageAsJLabel(inFileSummarySB.toString(), gd);
-		
+
 		String[] choicesAngleTile = new String[] {"Angles", "Tiles"};
 		String[] choicesChannelIllum = new String[] {"Channels", "Illuminations"};
 
@@ -881,7 +881,7 @@ public class FileListDatasetDefinition implements MultiViewDatasetDefinition
 		// we suggest move if: we have no tile metadata
 		addMessageAsJLabel(  "<html> <h2> Move to Grid </h2> </html> ", gd );
 		boolean haveTileLoc = state.getAccumulateMap( Tile.class ).keySet().stream().filter( t -> ((TileInfo)t).locationX != null && ((TileInfo)t).locationX != 0.0 ).findAny().isPresent();
-		
+
 		String[] choicesGridMove = new String[] {"Do not move Tiles to Grid (use Metadata if available)",
 				"Move Tiles to Grid (interactive)", "Move Tile to Grid (Macro-scriptable)"};
 		gd.addChoice( "Move_Tiles_to_Grid_(per_Angle)?", choicesGridMove, choicesGridMove[!haveTileLoc ? 1 : 0] );
@@ -922,7 +922,7 @@ public class FileListDatasetDefinition implements MultiViewDatasetDefinition
 				zVariables.add( i );
 		}
 
-		// TODO handle Angle-Tile swap here	
+		// TODO handle Angle-Tile swap here
 		FileListDatasetDefinitionUtil.resolveAmbiguity( state.getMultiplicityMap(), state.getAmbiguousIllumChannel(), preferChannelsOverIlluminations, state.getAmbiguousAngleTile(), !preferAnglesOverTiles );
 
 		// if we have used a grouped pattern
@@ -960,7 +960,7 @@ public class FileListDatasetDefinition implements MultiViewDatasetDefinition
 		}
 
 		FileListDatasetDefinitionUtil.expandAccumulatedViewInfos(
-				fileVariableToUse, 
+				fileVariableToUse,
 				patternDetectorOld == null ? patternDetector : patternDetectorOld,
 				state);
 
@@ -1012,7 +1012,7 @@ public class FileListDatasetDefinition implements MultiViewDatasetDefinition
 					continue;
 
 				final RegularTranslationParameters params = RegularTranformHelpers.queryParameters( "Move Tiles of Angle " + angleName, tilesGrouped.size() );
-				
+
 				if ( params == null )
 					return null;
 
@@ -1030,7 +1030,7 @@ public class FileListDatasetDefinition implements MultiViewDatasetDefinition
 		// get default save path := deepest parent directory of all files in dataset
 		final Set<String> filenames = new HashSet<>();
 		((FileMapGettable)data.getSequenceDescription().getImgLoader() ).getFileMap().values().stream().forEach(
-				p -> 
+				p ->
 				{
 					filenames.add( p.getA().getAbsolutePath());
 				});
@@ -1152,9 +1152,9 @@ public class FileListDatasetDefinition implements MultiViewDatasetDefinition
 			progressWriter.out().println( "starting export..." );
 
 			Generic_Resave_HDF5.writeHDF5( data, params, progressWriter );
-			
+
 			IOFunctions.println( "(" + new Date(  System.currentTimeMillis() ) + "): HDF5 resave finished." );
-			
+
 			net.preibisch.mvrecon.fiji.ImgLib2Temp.Pair< SpimData2, List< String > > result = Resave_HDF5.createXMLObject( data, new ArrayList<>(data.getSequenceDescription().getViewDescriptions().keySet()), params, progressWriter, true );
 
 			// ensure progressbar is gone
@@ -1203,14 +1203,14 @@ public class FileListDatasetDefinition implements MultiViewDatasetDefinition
 		{
 			data.gridMoveRequested = true;
 		}
-		
+
 		return data;
-		
+
 	}
-	
+
 	public static File getLongestPathPrefix(Collection<String> paths)
 	{
-		String prefixPath = paths.stream().reduce( paths.iterator().next(), 
+		String prefixPath = paths.stream().reduce( paths.iterator().next(),
 				(a,b) -> {
 					List<String> aDirs = Arrays.asList( a.split(Pattern.quote(File.separator) ));
 					List<String> bDirs = Arrays.asList( b.split( Pattern.quote(File.separator) ));
@@ -1226,12 +1226,12 @@ public class FileListDatasetDefinition implements MultiViewDatasetDefinition
 					return String.join(File.separator, res );
 				});
 		return new File(prefixPath);
-		
+
 	}
 
 	@Override
 	public String getTitle() { return "Automatic Loader (Bioformats based)"; }
-	
+
 	@Override
 	public String getExtendedDescription()
 	{
@@ -1247,8 +1247,8 @@ public class FileListDatasetDefinition implements MultiViewDatasetDefinition
 	{
 		return new FileListDatasetDefinition();
 	}
-	
-	
+
+
 	public static boolean containsAny(String s, String ... templates)
 	{
 		for (int i = 0; i < templates.length; i++)
@@ -1280,7 +1280,7 @@ public class FileListDatasetDefinition implements MultiViewDatasetDefinition
 			sb.append( "</html>" );
 		return sb.toString();
 	}
-	
+
 	public static Color getColorN(long n)
 	{
 		Iterator< ARGBType > iterator = ColorStream.iterator();
@@ -1290,13 +1290,13 @@ public class FileListDatasetDefinition implements MultiViewDatasetDefinition
 				c = iterator.next();
 		return new Color( ARGBType.red( c.get() ), ARGBType.green( c.get() ), ARGBType.blue( c.get() ) );
 	}
-	
+
 	public static Pair<String, String> splitIntoPrefixAndPattern(FilenamePatternDetector detector)
 	{
 		final String stringRepresentation = detector.getStringRepresentation();
 		final List< String > beforePattern = new ArrayList<>();
 		final List< String > afterPattern = new ArrayList<>();
-		
+
 		boolean found = false;
 		for (String s : Arrays.asList( stringRepresentation.split(Pattern.quote(File.separator) )))
 		{
@@ -1326,7 +1326,7 @@ public class FileListDatasetDefinition implements MultiViewDatasetDefinition
 	public static Pair<String, String> splitIntoPathAndPattern(String s, String ... templates)
 	{
 		String[] subpaths = s.split( Pattern.quote(File.separator) );
-		ArrayList<String> path = new ArrayList<>(); 
+		ArrayList<String> path = new ArrayList<>();
 		ArrayList<String> pattern = new ArrayList<>();
 		boolean noPatternFound = true;
 
@@ -1341,14 +1341,14 @@ public class FileListDatasetDefinition implements MultiViewDatasetDefinition
 				pattern.add(subpaths[i]);
 			}
 		}
-		
+
 		String sPath = String.join( "/", path );
 		String sPattern = String.join( "/", pattern );
-		
+
 		return new ValuePair< String, String >( sPath, sPattern );
 	}
-	
-	
+
+
 	public static void main(String[] args)
 	{
 		//new FileListDatasetDefinition().createDataset();

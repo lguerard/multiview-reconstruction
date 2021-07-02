@@ -1,25 +1,3 @@
-/*-
- * #%L
- * Software for the reconstruction of multi-view microscopic acquisitions
- * like Selective Plane Illumination Microscopy (SPIM) Data.
- * %%
- * Copyright (C) 2012 - 2021 Multiview Reconstruction developers.
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 package net.preibisch.mvrecon.fiji.spimdata.imgloaders;
 
 import java.io.File;
@@ -31,8 +9,13 @@ import loci.common.services.DependencyException;
 import loci.common.services.ServiceException;
 import loci.common.services.ServiceFactory;
 import loci.formats.ChannelSeparator;
+import loci.formats.FormatHandler;
 import loci.formats.FormatTools;
 import loci.formats.IFormatReader;
+import loci.formats.in.MetadataOptions;
+import loci.formats.in.DynamicMetadataOptions;
+import loci.formats.in.ZeissCZIReader;
+import loci.formats.MetadataTools;
 import loci.formats.meta.IMetadata;
 import loci.formats.services.OMEXMLService;
 import mpicbg.spim.data.generic.sequence.AbstractSequenceDescription;
@@ -55,20 +38,20 @@ import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.view.Views;
 import net.preibisch.legacy.io.IOFunctions;
-import net.preibisch.mvrecon.fiji.datasetmanager.LightSheetZ1;
-import net.preibisch.mvrecon.headless.definedataset.LightSheetZ1MetaData;
+import net.preibisch.mvrecon.fiji.datasetmanager.LightSheet7;
+import net.preibisch.mvrecon.headless.definedataset.LightSheet7MetaData;
 import util.ImgLib2Tools;
 
-public class LegacyLightSheetZ1ImgLoader extends AbstractImgFactoryImgLoader
+public class LegacyLightSheet7ImgLoader extends AbstractImgFactoryImgLoader
 {
 	final File cziFile;
 	final AbstractSequenceDescription<?, ?, ?> sequenceDescription;
 
 	// once the metadata is loaded for one view, it is available for all other ones
-	LightSheetZ1MetaData meta;
+	LightSheet7MetaData meta;
 	boolean isClosed = true;
 
-	public LegacyLightSheetZ1ImgLoader(
+	public LegacyLightSheet7ImgLoader(
 			final File cziFile,
 			final ImgFactory< ? extends NativeType< ? > > imgFactory,
 			final AbstractSequenceDescription<?, ?, ?> sequenceDescription )
@@ -112,7 +95,7 @@ public class LegacyLightSheetZ1ImgLoader extends AbstractImgFactoryImgLoader
 	@Override
 	protected void loadMetaData( final ViewId view )
 	{
-		IOFunctions.println( new Date( System.currentTimeMillis() ) + ": Loading metadata for Lightsheet Z1 imgloader not necessary." );
+		IOFunctions.println( new Date( System.currentTimeMillis() ) + ": Loading metadata for Lightsheet 7 imgloader not necessary." );
 	}
 
 	@Override
@@ -137,7 +120,7 @@ public class LegacyLightSheetZ1ImgLoader extends AbstractImgFactoryImgLoader
 		{
 			IOFunctions.println( new Date( System.currentTimeMillis() ) + ": Investigating file '" + cziFile.getAbsolutePath() + "' (loading metadata)." );
 
-			meta = new LightSheetZ1MetaData();
+			meta = new LightSheet7MetaData();
 
 			if ( !meta.loadMetaData( cziFile, true ) )
 			{
@@ -190,7 +173,7 @@ public class LegacyLightSheetZ1ImgLoader extends AbstractImgFactoryImgLoader
 
 		// if we already loaded the metadata in this run, use the opened file
 		if ( meta.getReader() == null )
-			r = LegacyLightSheetZ1ImgLoader.instantiateImageReader();
+			r = LegacyLightSheet7ImgLoader.instantiateImageReader();
 		else
 			r = meta.getReader();
 
@@ -365,28 +348,45 @@ public class LegacyLightSheetZ1ImgLoader extends AbstractImgFactoryImgLoader
 	public static IFormatReader instantiateImageReader()
 	{
 		// should I use the ZeissCZIReader here directly?
-		return new ChannelSeparator();
+		ZeissCZIReader r = new ZeissCZIReader();
+		MetadataOptions options = r.getMetadataOptions();
+		if (options instanceof DynamicMetadataOptions) {
+			((DynamicMetadataOptions) options).setBoolean(
+					ZeissCZIReader.ALLOW_AUTOSTITCHING_KEY, false);
+		} else {
+			System.out.println("What's wrong?");
+		}
+		r.setMetadataOptions(options);
+
+		// reader.setMetadataStore(omeMeta);
+
+		return new ChannelSeparator(r);
 	}
 
 	public static boolean createOMEXMLMetadata( final IFormatReader r )
 	{
-		try
-		{
-			final ServiceFactory serviceFactory = new ServiceFactory();
-			final OMEXMLService service = serviceFactory.getInstance( OMEXMLService.class );
-			final IMetadata omexmlMeta = service.createOMEXMLMetadata();
-			r.setMetadataStore(omexmlMeta);
-		}
-		catch (final ServiceException e)
-		{
-			e.printStackTrace();
-			return false;
-		}
-		catch (final DependencyException e)
-		{
-			e.printStackTrace();
-			return false;
-		}
+		// try
+		// {
+			// final ServiceFactory serviceFactory = new ServiceFactory();
+			// final OMEXMLService service = serviceFactory.getInstance( OMEXMLService.class );
+			// final IMetadata omexmlMeta = service.createOMEXMLMetadata();
+
+			// r.setMetadataStore(omexmlMeta);
+
+		final IMetadata omeMeta = MetadataTools.createOMEXMLMetadata();
+		r.setMetadataStore(omeMeta);
+
+		// }
+		// catch (final ServiceException e)
+		// {
+		// 	e.printStackTrace();
+		// 	return false;
+		// }
+		// catch (final DependencyException e)
+		// {
+		// 	e.printStackTrace();
+		// 	return false;
+		// }
 
 		return true;
 	}
@@ -443,6 +443,6 @@ public class LegacyLightSheetZ1ImgLoader extends AbstractImgFactoryImgLoader
 	@Override
 	public String toString()
 	{
-		return new LightSheetZ1().getTitle() + ", ImgFactory=" + imgFactory.getClass().getSimpleName();
+		return new LightSheet7().getTitle() + ", ImgFactory=" + imgFactory.getClass().getSimpleName();
 	}
 }

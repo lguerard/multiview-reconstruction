@@ -31,11 +31,15 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.Arrays;
 
 import loci.formats.FormatTools;
 import loci.formats.IFormatReader;
 import loci.formats.Modulo;
+import loci.formats.meta.IMetadata;
 import loci.formats.meta.MetadataRetrieve;
+import loci.formats.meta.MetadataStore;
+import loci.formats.ome.OMEPyramidStore;
 import mpicbg.spim.data.sequence.SequenceDescription;
 import mpicbg.spim.data.sequence.Tile;
 import mpicbg.spim.data.sequence.TimePoint;
@@ -49,11 +53,11 @@ import net.imglib2.type.numeric.real.FloatType;
 import net.preibisch.legacy.io.IOFunctions;
 import net.preibisch.mvrecon.fiji.datasetmanager.StackList;
 import net.preibisch.mvrecon.fiji.spimdata.SpimData2;
-import net.preibisch.mvrecon.fiji.spimdata.imgloaders.LegacyLightSheetZ1ImgLoader;
+import net.preibisch.mvrecon.fiji.spimdata.imgloaders.LegacyLightSheet7ImgLoader;
 
 import ome.units.quantity.Length;
 
-public class LightSheetZ1MetaData
+public class LightSheet7MetaData
 {
 	private String objective = "";
 	private String calUnit = "um";
@@ -151,9 +155,9 @@ public class LightSheetZ1MetaData
 
 	public boolean loadMetaData( final File cziFile, final boolean keepFileOpen )
 	{
-		final IFormatReader r = LegacyLightSheetZ1ImgLoader.instantiateImageReader();
+		final IFormatReader r = LegacyLightSheet7ImgLoader.instantiateImageReader();
 
-		if ( !LegacyLightSheetZ1ImgLoader.createOMEXMLMetadata( r ) )
+		if ( !LegacyLightSheet7ImgLoader.createOMEXMLMetadata( r ) )
 		{
 			try { r.close(); } catch (IOException e) { e.printStackTrace(); }
 			IOFunctions.println( "Creating MetaDataStore failed. Stopping" );
@@ -172,7 +176,7 @@ public class LightSheetZ1MetaData
 			if ( !( pixelType == FormatTools.UINT8 || pixelType == FormatTools.UINT16 || pixelType == FormatTools.UINT32 || pixelType == FormatTools.FLOAT ) )
 			{
 				IOFunctions.println(
-						"LightSheetZ1MetaData.loadMetaData(): PixelType " + pixelTypeString +
+						"LightSheet7MetaData.loadMetaData(): PixelType " + pixelTypeString +
 						" not supported yet. Please send me an email about this: stephan.preibisch@gmx.de - stopping." );
 
 				r.close();
@@ -196,8 +200,10 @@ public class LightSheetZ1MetaData
 
 		// number each angle and tile has its own series
 		final int numAorT = r.getSeriesCount();
-		System.out.println(numAorT);
 		final int numTiles = numAorT;
+		IOFunctions.println(numAorT);
+
+		// final int numTiles = metaData.get( "Experiment|AcquisitionBlock|TilesSetup|PositionGroup|TilesX #1") * metadata.get( "Experiment|AcquisitionBlock|TilesSetup|PositionGroup|TilesY #1");
 
 		// make sure every angle has the same amount of timepoints, channels, illuminations
 		this.numT = -1;
@@ -241,7 +247,8 @@ public class LightSheetZ1MetaData
 				IOFunctions.println( "Querying information for angle/tile #" + at );
 
 				// try 4 different combinations of metadata query to get size in z (there is a bug in LOCI returning the maximum size for all angle/tile)
-				double dimZ = getDouble( metaData, "Information|Image|V|View|SizeZ #" + StackList.leadingZeros( Integer.toString( at+1 ), numDigits ) );
+				// double dimZ = getDouble( metaData, "Information|Image|V|View|SizeZ #" + StackList.leadingZeros( Integer.toString( at+1 ), numDigits ) );
+				double dimZ = r.getSizeZ();
 
 				if ( Double.isNaN( dimZ ) )
 					dimZ = getDouble( metaData, "Information|Image|V|View|SizeZ #" + Integer.toString( at+1 ) );
@@ -397,28 +404,138 @@ public class LightSheetZ1MetaData
 		try
 		{
 			final double[] pos = new double[3];
+			final OMEPyramidStore current_meta = (OMEPyramidStore) r.getMetadataStore();
+<<<<<<< HEAD
 
-			for ( int at = 0; at < numAorT; ++at )
+			// IOFunctions.println(numAorT);
+
+			for ( int at = 0; at < numAorT; at++ )
 			{
-				tmp = metaData.get( "Information|Image|V|View|PositionX #" + StackList.leadingZeros( Integer.toString( at+1 ), numDigits ) );
-				if ( tmp == null )
-					tmp = metaData.get( "Information|Image|V|View|PositionX #" + ( at+1 ) );
-				pos[ 0 ] = (tmp != null) ?  Double.parseDouble( tmp.toString() )  : 0.0;
+				tmp = current_meta.getPlanePositionX(at, current_meta.getPlaneCount(at) - 1).value();
+				Double tmp_x = Double.parseDouble(tmp.toString());
+				IOFunctions.println(tmp_x.toString());
+				if (at == 0)
+				{
+					Double half_width = Double.parseDouble(current_meta.getPixelsSizeX(0).toString()) / 2;
+					tmp_x = tmp_x - half_width;
+				}
+				if (at != 0)
+				{
+					Double orig_tmp = (Double) current_meta.getPlanePositionX(0, current_meta.getPlaneCount(0) - 1).value();
+					Double x_cal = (Double) current_meta.getPixelsPhysicalSizeX(0).value();
+					Double tmp_x_cal = (Double) tmp_x * x_cal;
+					// orig_tmp = orig_tmp / x_cal;
+					tmp_x = tmp_x_cal + orig_tmp;
+					IOFunctions.println(orig_tmp.toString());
+					IOFunctions.println(x_cal.toString());
+					IOFunctions.println(tmp_x_cal.toString());
+				}
+				pos[ 0 ] = (tmp_x != null) ? Double.parseDouble( tmp_x.toString() ) : 0.0;
 
-				tmp = metaData.get( "Information|Image|V|View|PositionY #" + StackList.leadingZeros( Integer.toString( at+1 ), numDigits ) );
-				if ( tmp == null )
-					tmp = metaData.get( "Information|Image|V|View|PositionY #"  + ( at+1 ) );
-				pos[ 1 ] = (tmp != null) ?  Double.parseDouble( tmp.toString() )  : 0.0;
+				tmp = current_meta.getPlanePositionY(at, current_meta.getPlaneCount(at) - 1).value();
+				Double tmp_y = Double.parseDouble(tmp.toString());
+				if (at == 0)
+				{
+					Double half_height = Double.parseDouble((current_meta.getPixelsSizeY(0)).toString()) / 2;
+					tmp_y = tmp_y - half_height ;
+				}
+=======
+			if (anglesList.size() != numAorT)
+			{
+				for ( int at = 0; at < numAorT; at++ )
+				{
+					Integer corrected_number_planes = new Integer(current_meta.getPlaneCount(at));
+					corrected_number_planes = corrected_number_planes / (anglesList.size() * numC);
+					tmp = current_meta.getPlanePositionX(at, corrected_number_planes - 1).value();
+					// IOFunctions.println("blabla");
+					Object test = metaData.get("Experiment|AcquisitionBlock|TilesSetup|PositionGroup|TileAcquisitionOverlap #1");
+					Double overlap = (test != null) ? Double.parseDouble(test.toString()) : 0.0;
+					// IOFunctions.println(overlap);
 
-				tmp = metaData.get( "Information|Image|V|View|PositionZ #" + StackList.leadingZeros( Integer.toString( at+1 ), numDigits ) );
-				if ( tmp == null )
-					tmp = metaData.get( "Information|Image|V|View|PositionZ #" + ( at+1 ) );
-				pos[ 2 ] = (tmp != null) ?  Double.parseDouble( tmp.toString() )  : 0.0;
+					Double x_cal = (Double) current_meta.getPixelsPhysicalSizeX(0).value();
+					Double tmp_x = Double.parseDouble(tmp.toString());
+					if (at == 0)
+					{
+						Double number_x_tiles = getDouble(metaData, "Experiment|AcquisitionBlock|TilesSetup|PositionGroup|TilesX #1");
+						if (number_x_tiles > 1)
+						{
+							Double half_width = Double.parseDouble(current_meta.getPixelsSizeX(0).toString()) / 2;
+							tmp_x = tmp_x - ( half_width * (1 - overlap) * x_cal);
+						}
+					}
+					if (at != 0)
+					{
+						Double orig_tmp = (Double) current_meta.getPlanePositionX(0, corrected_number_planes - 1).value();
+						Double tmp_x_cal = (Double) tmp_x * x_cal;
+						tmp_x = tmp_x_cal + orig_tmp;
+					}
+					pos[ 0 ] = (tmp_x != null) ? Double.parseDouble( tmp_x.toString() ) : 0.0;
 
-				tileLocations.add( pos.clone() );
+					tmp = current_meta.getPlanePositionY(at, corrected_number_planes - 1).value();
+					Double tmp_y = Double.parseDouble(tmp.toString());
+					Double y_cal = (Double) current_meta.getPixelsPhysicalSizeY(0).value();
+					if (at == 0)
+					{
+						Double number_y_tiles = getDouble(metaData, "Experiment|AcquisitionBlock|TilesSetup|PositionGroup|TilesY #1");
+						if (number_y_tiles > 1)
+						{
+							Double half_height = Double.parseDouble((current_meta.getPixelsSizeY(0)).toString()) / 2;
+							tmp_y = tmp_y - ( half_height * (1 - overlap) * y_cal) ;
+						}
+					}
+					if (at != 0)
+					{
+						Double orig_tmp = (Double) current_meta.getPlanePositionY(0, corrected_number_planes - 1).value();
+						Double tmp_xy_cal = (Double) tmp_y * y_cal;
+						tmp_y = tmp_xy_cal + orig_tmp;
+					}
+					pos[ 1 ] = (tmp_y != null) ? Double.parseDouble( tmp_y.toString() ) : 0.0;
 
-				tiles[ at ] = "Tile" + at;
+					tmp = current_meta.getPlanePositionZ(0, corrected_number_planes - 1).value();
+					pos[ 2 ] = (tmp != null) ? Double.parseDouble( tmp.toString() ) : 0.0;
+
+					tileLocations.add( pos.clone() );
+
+					tiles[ at ] = "Tile" + at;
+				}
 			}
+			else
+			{
+				if (numAorT == 1)
+				{
+
+					IOFunctions.println("Only 1 tile and angle found");
+					pos[ 0 ] = 0.0;
+					pos[ 1 ] = 0.0;
+					pos[ 2 ] = 0.0;
+					tileLocations.add( pos.clone() );
+
+					tiles[ 0 ] = "Tile" + 0;
+				}
+				else
+				{
+					IOFunctions.println("No tiles found");
+					for ( int at = 0; at < numAorT; ++at )
+					{
+						IOFunctions.println(at);
+						Double tmp_x = getDouble( metaData, "Information|Image|V|View|PositionX #" + Integer.toString( at+1 ) );
+						pos[ 0 ] = (tmp_x != null) ? tmp_x : 0.0;
+
+						Double tmp_y = getDouble( metaData, "Information|Image|V|View|PositionY #" + Integer.toString( at+1 ) );
+						pos[ 1 ] = (tmp_y != null) ? tmp_y : 0.0;
+
+						Double tmp_z = getDouble( metaData, "Information|Image|V|View|PositionZ #" + Integer.toString( at+1 ) );
+						pos[ 2 ] = (tmp_z != null) ? tmp_z : 0.0;
+
+						tileLocations.add( pos.clone() );
+
+						tiles[ at ] = "Tile" + at;
+						IOFunctions.println(Arrays.toString(pos));
+					}
+				}
+>>>>>>> wip-multiview
+			}
+
 		}
 		catch ( Exception e )
 		{
@@ -503,7 +620,7 @@ public class LightSheetZ1MetaData
 			if ( cal == 0 )
 			{
 				cal = 1;
-				IOFunctions.println( "LightSheetZ1: Warning, calibration for dimension X seems corrupted, setting to 1." );
+				IOFunctions.println( "LightSheet7: Warning, calibration for dimension X seems corrupted, setting to 1." );
 			}
 			calX = cal;
 
@@ -514,7 +631,7 @@ public class LightSheetZ1MetaData
 			if ( cal == 0 )
 			{
 				cal = 1;
-				IOFunctions.println( "LightSheetZ1: Warning, calibration for dimension Y seems corrupted, setting to 1." );
+				IOFunctions.println( "LightSheet7: Warning, calibration for dimension Y seems corrupted, setting to 1." );
 			}
 			calY = cal;
 
@@ -525,7 +642,7 @@ public class LightSheetZ1MetaData
 			if ( cal == 0 )
 			{
 				cal = 1;
-				IOFunctions.println( "LightSheetZ1: Warning, calibration for dimension Z seems corrupted, setting to 1." );
+				IOFunctions.println( "LightSheet7: Warning, calibration for dimension Z seems corrupted, setting to 1." );
 			}
 			calZ = cal;
 		}
@@ -556,13 +673,13 @@ public class LightSheetZ1MetaData
 		return true;
 	}
 
-	public static boolean fixBioformats( final SpimData2 spimData, final File cziFile, final LightSheetZ1MetaData meta )
+	public static boolean fixBioformats( final SpimData2 spimData, final File cziFile, final LightSheet7MetaData meta )
 	{
 		final IFormatReader r;
 
 		// if we already loaded the metadata in this run, use the opened file
 		if ( meta.getReader() == null )
-			r = LegacyLightSheetZ1ImgLoader.instantiateImageReader();
+			r = LegacyLightSheet7ImgLoader.instantiateImageReader();
 		else
 			r = meta.getReader();
 
@@ -609,6 +726,8 @@ public class LightSheetZ1MetaData
 				final int depth = (int)vd.getViewSetup().getSize().dimension( 2 );
 				final int numPx = width * height;
 
+				IOFunctions.println(Arrays.toString(t.getLocation()));
+
 				// set the right tile
 				r.setSeries( t.getId() );
 
@@ -624,15 +743,15 @@ public class LightSheetZ1MetaData
 					r.openBytes( r.getIndex( z, 0, vd.getTimePointId() ), b );
 
 					if ( pixelType == FormatTools.UINT8 )
-						LegacyLightSheetZ1ImgLoader.readBytesArray( b, cursor, numPx );
+						LegacyLightSheet7ImgLoader.readBytesArray( b, cursor, numPx );
 					else if ( pixelType == FormatTools.UINT16 )
-						LegacyLightSheetZ1ImgLoader.readUnsignedShortsArray( b, cursor, numPx, isLittleEndian );
+						LegacyLightSheet7ImgLoader.readUnsignedShortsArray( b, cursor, numPx, isLittleEndian );
 					else if ( pixelType == FormatTools.INT16 )
-						LegacyLightSheetZ1ImgLoader.readSignedShortsArray( b, cursor, numPx, isLittleEndian );
+						LegacyLightSheet7ImgLoader.readSignedShortsArray( b, cursor, numPx, isLittleEndian );
 					else if ( pixelType == FormatTools.UINT32 )
-						LegacyLightSheetZ1ImgLoader.readUnsignedIntsArray( b, cursor, numPx, isLittleEndian );
+						LegacyLightSheet7ImgLoader.readUnsignedIntsArray( b, cursor, numPx, isLittleEndian );
 					else if ( pixelType == FormatTools.FLOAT )
-						LegacyLightSheetZ1ImgLoader.readFloatsArray( b, cursor, numPx, isLittleEndian );
+						LegacyLightSheet7ImgLoader.readFloatsArray( b, cursor, numPx, isLittleEndian );
 
 					if ( !allZero( slice ) )
 						break;
@@ -679,7 +798,7 @@ public class LightSheetZ1MetaData
 				builder.append( "\n" + candidate );
 			//System.out.println( "Available keys:" + builder );
 
-			IOFunctions.println( "Missing key " + key + " in LZ1 metadata" );
+			IOFunctions.println( "Missing key " + key + " in L7 metadata" );
 			return Double.NaN;
 		}
 
