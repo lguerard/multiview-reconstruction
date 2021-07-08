@@ -405,7 +405,6 @@ public class LightSheet7MetaData
 		{
 			final double[] pos = new double[3];
 			final OMEPyramidStore current_meta = (OMEPyramidStore) r.getMetadataStore();
-<<<<<<< HEAD
 
 			// IOFunctions.println(numAorT);
 
