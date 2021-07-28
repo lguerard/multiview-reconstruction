@@ -201,7 +201,7 @@ public class LightSheet7MetaData
 		// number each angle and tile has its own series
 		final int numAorT = r.getSeriesCount();
 		final int numTiles = numAorT;
-		IOFunctions.println(numAorT);
+		// IOFunctions.println(numAorT);
 
 		// final int numTiles = metaData.get( "Experiment|AcquisitionBlock|TilesSetup|PositionGroup|TilesX #1") * metadata.get( "Experiment|AcquisitionBlock|TilesSetup|PositionGroup|TilesY #1");
 
@@ -425,10 +425,8 @@ public class LightSheet7MetaData
 					Double tmp_x_cal = (Double) tmp_x * x_cal;
 					// orig_tmp = orig_tmp / x_cal;
 					tmp_x = tmp_x_cal + orig_tmp;
-					IOFunctions.println(orig_tmp.toString());
-					IOFunctions.println(x_cal.toString());
-					IOFunctions.println(tmp_x_cal.toString());
 				}
+
 				pos[ 0 ] = (tmp_x != null) ? Double.parseDouble( tmp_x.toString() ) : 0.0;
 
 				tmp = current_meta.getPlanePositionY(at, current_meta.getPlaneCount(at) - 1).value();
@@ -529,10 +527,9 @@ public class LightSheet7MetaData
 						tileLocations.add( pos.clone() );
 
 						tiles[ at ] = "Tile" + at;
-						IOFunctions.println(Arrays.toString(pos));
+						// IOFunctions.println(Arrays.toString(pos));
 					}
 				}
->>>>>>> wip-multiview
 			}
 
 		}
@@ -725,7 +722,7 @@ public class LightSheet7MetaData
 				final int depth = (int)vd.getViewSetup().getSize().dimension( 2 );
 				final int numPx = width * height;
 
-				IOFunctions.println(Arrays.toString(t.getLocation()));
+				// IOFunctions.println(Arrays.toString(t.getLocation()));
 
 				// set the right tile
 				r.setSeries( t.getId() );
