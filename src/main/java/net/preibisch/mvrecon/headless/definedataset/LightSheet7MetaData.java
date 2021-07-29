@@ -407,37 +407,6 @@ public class LightSheet7MetaData
 			final OMEPyramidStore current_meta = (OMEPyramidStore) r.getMetadataStore();
 			String acquisition_mode = (metaData.get("Experiment|AcquisitionBlock|TilesSetup|PositionGroup|TileAcquisitionMode #1")).toString();
 
-			// IOFunctions.println(numAorT);
-
-			// for ( int at = 0; at < numAorT; at++ )
-			// {
-			// 	tmp = current_meta.getPlanePositionX(at, current_meta.getPlaneCount(at) - 1).value();
-			// 	Double tmp_x = Double.parseDouble(tmp.toString());
-			// 	if (at == 0)
-			// 	{
-			// 		Double half_width = Double.parseDouble(current_meta.getPixelsSizeX(0).toString()) / 2;
-			// 		tmp_x = tmp_x - half_width;
-			// 	}
-			// 	if (at != 0)
-			// 	{
-			// 		Double orig_tmp = (Double) current_meta.getPlanePositionX(0, current_meta.getPlaneCount(0) - 1).value();
-			// 		Double x_cal = (Double) current_meta.getPixelsPhysicalSizeX(0).value();
-			// 		Double tmp_x_cal = (Double) tmp_x * x_cal;
-			// 		// orig_tmp = orig_tmp / x_cal;
-			// 		tmp_x = tmp_x_cal + orig_tmp;
-			// 	}
-
-			// 	pos[ 0 ] = (tmp_x != null) ? Double.parseDouble( tmp_x.toString() ) : 0.0;
-
-			// 	tmp = current_meta.getPlanePositionY(at, current_meta.getPlaneCount(at) - 1).value();
-			// 	Double tmp_y = Double.parseDouble(tmp.toString());
-			// 	if (at == 0)
-			// 	{
-			// 		Double half_height = Double.parseDouble((current_meta.getPixelsSizeY(0)).toString()) / 2;
-			// 		tmp_y = tmp_y - half_height ;
-			// 	}
-			// }
-
 			if (anglesList.size() != numAorT)
 			{
 				for ( int at = 0; at < numAorT; at++ )
@@ -455,13 +424,12 @@ public class LightSheet7MetaData
 						Double number_x_tiles = getDouble(metaData, "Experiment|AcquisitionBlock|TilesSetup|PositionGroup|TilesX #1");
 						if (number_x_tiles > 1)
 						{
-							IOFunctions.println(acquisition_mode);
-							if (acquisition_mode == "CenteredGrid")
+							if (acquisition_mode.equals("CenteredGrid"))
 							{
-								Double half_width = Double.parseDouble(current_meta.getPixelsSizeX(0).toString()) / 2;
-								tmp_x = tmp_x - ( half_width * (1 - overlap) * x_cal);
+								Double width = Double.parseDouble(current_meta.getPixelsSizeX(0).toString()) ;
+								tmp_x = tmp_x - ( width * (1 - overlap) * (number_x_tiles / 2.0 - 0.5) * x_cal);
 							}
-							if (acquisition_mode == "ConvexHull")
+							if (acquisition_mode.equals("ConvexHull"))
 							{
 								Double orig_tmp = (Double) current_meta.getPlanePositionX(0, corrected_number_planes - 1).value();
 								tmp_x = orig_tmp;
@@ -489,12 +457,12 @@ public class LightSheet7MetaData
 						Double number_y_tiles = getDouble(metaData, "Experiment|AcquisitionBlock|TilesSetup|PositionGroup|TilesY #1");
 						if (number_y_tiles > 1)
 						{
-							if (acquisition_mode == "CenteredGrid")
+							if (acquisition_mode.equals("CenteredGrid"))
 							{
-								Double half_height = Double.parseDouble((current_meta.getPixelsSizeY(0)).toString()) / 2;
-								tmp_y = tmp_y - ( half_height * (1 - overlap) * y_cal) ;
+								Double height = Double.parseDouble((current_meta.getPixelsSizeY(0)).toString());
+								tmp_y = tmp_y - ( height * (1 - overlap) * (number_y_tiles / 2.0 - 0.5) * y_cal) ;
 							}
-							if (acquisition_mode == "ConvexHull")
+							if (acquisition_mode.equals("ConvexHull"))
 							{
 								Double orig_tmp = (Double) current_meta.getPlanePositionY(0, corrected_number_planes - 1).value();
 								tmp_y = orig_tmp;
