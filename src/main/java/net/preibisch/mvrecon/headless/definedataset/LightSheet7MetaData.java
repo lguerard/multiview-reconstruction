@@ -409,34 +409,34 @@ public class LightSheet7MetaData
 
 			// IOFunctions.println(numAorT);
 
-			for ( int at = 0; at < numAorT; at++ )
-			{
-				tmp = current_meta.getPlanePositionX(at, current_meta.getPlaneCount(at) - 1).value();
-				Double tmp_x = Double.parseDouble(tmp.toString());
-				if (at == 0)
-				{
-					Double half_width = Double.parseDouble(current_meta.getPixelsSizeX(0).toString()) / 2;
-					tmp_x = tmp_x - half_width;
-				}
-				if (at != 0)
-				{
-					Double orig_tmp = (Double) current_meta.getPlanePositionX(0, current_meta.getPlaneCount(0) - 1).value();
-					Double x_cal = (Double) current_meta.getPixelsPhysicalSizeX(0).value();
-					Double tmp_x_cal = (Double) tmp_x * x_cal;
-					// orig_tmp = orig_tmp / x_cal;
-					tmp_x = tmp_x_cal + orig_tmp;
-				}
+			// for ( int at = 0; at < numAorT; at++ )
+			// {
+			// 	tmp = current_meta.getPlanePositionX(at, current_meta.getPlaneCount(at) - 1).value();
+			// 	Double tmp_x = Double.parseDouble(tmp.toString());
+			// 	if (at == 0)
+			// 	{
+			// 		Double half_width = Double.parseDouble(current_meta.getPixelsSizeX(0).toString()) / 2;
+			// 		tmp_x = tmp_x - half_width;
+			// 	}
+			// 	if (at != 0)
+			// 	{
+			// 		Double orig_tmp = (Double) current_meta.getPlanePositionX(0, current_meta.getPlaneCount(0) - 1).value();
+			// 		Double x_cal = (Double) current_meta.getPixelsPhysicalSizeX(0).value();
+			// 		Double tmp_x_cal = (Double) tmp_x * x_cal;
+			// 		// orig_tmp = orig_tmp / x_cal;
+			// 		tmp_x = tmp_x_cal + orig_tmp;
+			// 	}
 
-				pos[ 0 ] = (tmp_x != null) ? Double.parseDouble( tmp_x.toString() ) : 0.0;
+			// 	pos[ 0 ] = (tmp_x != null) ? Double.parseDouble( tmp_x.toString() ) : 0.0;
 
-				tmp = current_meta.getPlanePositionY(at, current_meta.getPlaneCount(at) - 1).value();
-				Double tmp_y = Double.parseDouble(tmp.toString());
-				if (at == 0)
-				{
-					Double half_height = Double.parseDouble((current_meta.getPixelsSizeY(0)).toString()) / 2;
-					tmp_y = tmp_y - half_height ;
-				}
-			}
+			// 	tmp = current_meta.getPlanePositionY(at, current_meta.getPlaneCount(at) - 1).value();
+			// 	Double tmp_y = Double.parseDouble(tmp.toString());
+			// 	if (at == 0)
+			// 	{
+			// 		Double half_height = Double.parseDouble((current_meta.getPixelsSizeY(0)).toString()) / 2;
+			// 		tmp_y = tmp_y - half_height ;
+			// 	}
+			// }
 
 			if (anglesList.size() != numAorT)
 			{
