@@ -9,12 +9,12 @@
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -60,11 +60,11 @@ public class Save3dTIFF implements ImgExport, Calibrateable
 
 	public Save3dTIFF( final String path ) { this( path, false ); }
 	public Save3dTIFF( final String path, final boolean compress )
-	{ 
+	{
 		this.path = path;
 		this.compress = compress;
 	}
-	
+
 	public < T extends RealType< T > & NativeType< T > > void exportImage( final RandomAccessibleInterval< T > img, final String title )
 	{
 		exportImage( img, null, Double.NaN, Double.NaN, title, null );
@@ -116,7 +116,7 @@ public class Save3dTIFF implements ImgExport, Calibrateable
 		// do nothing in case the image is null
 		if ( img == null )
 			return false;
-		
+
 		// determine min and max
 		final double[] minmax = DisplayImage.getFusionMinMax( img, min, max );
 
@@ -125,6 +125,8 @@ public class Save3dTIFF implements ImgExport, Calibrateable
 		DisplayImage.setCalibration( imp, bb, downsampling, anisoF, cal, unit );
 
 		imp.updateAndDraw();
+		IOFunctions.println("Save3DTIFF");
+		IOFunctions.println(imp.getCalibration());
 
 		final String fileName = getFileName( title );
 
@@ -181,10 +183,10 @@ public class Save3dTIFF implements ImgExport, Calibrateable
 		if ( defaultPath == null || defaultPath.length() == 0 )
 		{
 			defaultPath = fusion.getSpimData().getBasePath().getAbsolutePath();
-			
+
 			if ( defaultPath.endsWith( "/." ) )
 				defaultPath = defaultPath.substring( 0, defaultPath.length() - 1 );
-			
+
 			if ( defaultPath.endsWith( "/./" ) )
 				defaultPath = defaultPath.substring( 0, defaultPath.length() - 2 );
 		}
