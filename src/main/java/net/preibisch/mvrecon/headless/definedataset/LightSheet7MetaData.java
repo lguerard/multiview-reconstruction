@@ -436,7 +436,7 @@ public class LightSheet7MetaData
 					Double half_height = Double.parseDouble((current_meta.getPixelsSizeY(0)).toString()) / 2;
 					tmp_y = tmp_y - half_height ;
 				}
-=======
+
 			if (anglesList.size() != numAorT)
 			{
 				for ( int at = 0; at < numAorT; at++ )
