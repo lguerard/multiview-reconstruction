@@ -97,7 +97,6 @@ public class Resave_TIFF implements PlugIn
 	@Override
 	public void run( final String arg0 )
 	{
-		IOFunctions.println("Here");
 		final LoadParseQueryXML lpq = new LoadParseQueryXML();
 
 		if ( !lpq.queryXML( "Resaving as TIFF", "Resave", true, true, true, true, true ) )
@@ -107,7 +106,7 @@ public class Resave_TIFF implements PlugIn
 		progressWriter.out().println( "starting export..." );
 
 		final Parameters params = getParameters();
-		IOFunctions.println(params.getXMLFile());
+		IOFunctions.println("Here in run");
 
 		if ( params == null )
 			return;
@@ -116,7 +115,7 @@ public class Resave_TIFF implements PlugIn
 		final List< ViewId > viewIds = SpimData2.getAllViewIdsSorted( data, lpq.getViewSetupsToProcess(), lpq.getTimePointsToProcess() );
 
 		// write the TIFF's
-		writeTIFF( data, viewIds, new File( params.xmlFile ).getParent(), params.compress, progressWriter );
+		writeTIFF( data, viewIds, new File( params.xmlFile ).getParent(), params.compress, progressWriter, params.getXMLFile() );
 
 		// write the XML
 		try
@@ -182,7 +181,7 @@ public class Resave_TIFF implements PlugIn
 
 	public static Parameters getParameters()
 	{
-		IOFunctions.println("In get")
+		IOFunctions.println("Here in getParams");
 		final GenericDialogPlus gd = new GenericDialogPlus( "Resave dataset as TIFF" );
 
 		if ( defaultPath == null )
@@ -217,14 +216,12 @@ public class Resave_TIFF implements PlugIn
 
 	public static void writeTIFF( final SpimData spimData, final List< ViewId > viewIds, final String path, final boolean compress, final ProgressWriter progressWriter )
 	{
-		IOFunctions.println(spimData.getViewSetup().getVoxelSize());
 
 		if ( compress )
 			IOFunctions.println( new Date( System.currentTimeMillis() ) + ": Saving compressed TIFFS to directory '" + path + "'" );
 		else
 			IOFunctions.println( new Date( System.currentTimeMillis() ) + ": Saving TIFFS to directory '" + path + "'" );
 
-		IOFunctions.println(path);
 		final Save3dTIFF save = new Save3dTIFF( path, compress );
 
 		final int numAngles = SpimData2.getAllAnglesSorted( spimData, viewIds ).size();
