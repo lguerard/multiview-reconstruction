@@ -270,13 +270,64 @@ public class Resave_TIFF implements PlugIn
 		}
 	}
 
+	public static void writeTIFF( final SpimData spimData, final List< ViewId > viewIds, final String path, final boolean compress, final ProgressWriter progressWriter, final String xml_path )
+	{
+
+		if ( compress )
+			IOFunctions.println( new Date( System.currentTimeMillis() ) + ": Saving compressed TIFFS to directory '" + path + "'" );
+		else
+			IOFunctions.println( new Date( System.currentTimeMillis() ) + ": Saving TIFFS to directory '" + path + "'" );
+
+		final Save3dTIFF save = new Save3dTIFF( path, compress );
+
+		final int numAngles = SpimData2.getAllAnglesSorted( spimData, viewIds ).size();
+		final int numChannels = SpimData2.getAllChannelsSorted( spimData, viewIds ).size();
+		final int numIlluminations = SpimData2.getAllIlluminationsSorted( spimData, viewIds ).size();
+		final int numTimepoints =  SpimData2.getAllTimePointsSorted( spimData, viewIds ).size();
+		final int numTiles =  SpimData2.getAllTilesSorted( spimData, viewIds ).size();
+
+		int i = 0;
+
+		for ( final ViewId viewId : viewIds )
+		{
+			i++;
+
+			final ViewDescription viewDescription = spimData.getSequenceDescription().getViewDescription(
+					viewId.getTimePointId(), viewId.getViewSetupId() );
+
+			if ( !viewDescription.isPresent() )
+				continue;
+
+			final RandomAccessibleInterval img = spimData.getSequenceDescription().getImgLoader().getSetupImgLoader( viewId.getViewSetupId() ).getImage( viewId.getTimePointId(), LOAD_COMPLETELY );
+
+			String filename = "img";
+
+			if ( numTimepoints > 1 )
+				filename += "_TL" + viewId.getTimePointId();
+
+			if ( numChannels > 1 )
+				filename += "_Ch" + viewDescription.getViewSetup().getChannel().getName();
+
+			if ( numIlluminations > 1 )
+				filename += "_Ill" + viewDescription.getViewSetup().getIllumination().getName();
+
+			if ( numAngles > 1 )
+				filename += "_Angle" + viewDescription.getViewSetup().getAngle().getName();
+
+			if ( numTiles > 1 )
+				filename += "_Tile" + viewDescription.getViewSetup().getTile().getName();
+
+			save.exportImage( img, filename, xml_path, i - 1 );
+
+			progressWriter.setProgress( ((i-1) / (double)viewIds.size()) * 95.00  );
+		}
+	}
+
 
 	public static Pair< SpimData2, List< String > > createXMLObject( final SpimData2 spimData, final List< ViewId > viewIds, final Parameters params )
 	{
 		int layoutTP = 0, layoutChannels = 0, layoutIllum = 0, layoutAngles = 0, layoutTiles = 0;
 		String filename = "img";
-
-		IOFunctions.println(spimData.getBasePath());
 
 		final int numAngles = SpimData2.getAllAnglesSorted( spimData, viewIds ).size();
 		final int numChannels = SpimData2.getAllChannelsSorted( spimData, viewIds ).size();
