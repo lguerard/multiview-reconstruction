@@ -184,9 +184,6 @@ public class DisplayImage implements ImgExport, Calibrateable
 		imp.setDimensions( 1, (int)img.dimension( 2 ), 1 );
 		imp.setDisplayRange( minmax[ 0 ], minmax[ 1 ] );
 
-		IOFunctions.println("DisplayImage");
-		IOFunctions.println(imp.getCalibration());
-
 		return imp;
 	}
 
