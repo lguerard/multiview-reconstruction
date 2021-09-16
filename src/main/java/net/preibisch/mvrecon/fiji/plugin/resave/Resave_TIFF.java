@@ -107,10 +107,7 @@ public class Resave_TIFF implements PlugIn
 		progressWriter.out().println( "starting export..." );
 
 		final Parameters params = getParameters();
-<<<<<<< Updated upstream
 		IOFunctions.println(params.getXMLFile());
-=======
->>>>>>> Stashed changes
 
 		if ( params == null )
 			return;
@@ -227,10 +224,7 @@ public class Resave_TIFF implements PlugIn
 		else
 			IOFunctions.println( new Date( System.currentTimeMillis() ) + ": Saving TIFFS to directory '" + path + "'" );
 
-<<<<<<< Updated upstream
-=======
 		IOFunctions.println(path);
->>>>>>> Stashed changes
 		final Save3dTIFF save = new Save3dTIFF( path, compress );
 
 		final int numAngles = SpimData2.getAllAnglesSorted( spimData, viewIds ).size();
