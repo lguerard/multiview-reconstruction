@@ -117,6 +117,10 @@ public class Save3dTIFF implements ImgExport, Calibrateable
 		if ( img == null )
 			return false;
 
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 		// determine min and max
 		final double[] minmax = DisplayImage.getFusionMinMax( img, min, max );
 
@@ -129,6 +133,8 @@ public class Save3dTIFF implements ImgExport, Calibrateable
 		IOFunctions.println(imp.getCalibration());
 
 		final String fileName = getFileName( title );
+		IOFunctions.println(title);
+		IOFunctions.println(fileName);
 
 		IOFunctions.println( new Date( System.currentTimeMillis() ) + ": Saving file " + fileName );
 
@@ -154,6 +160,9 @@ public class Save3dTIFF implements ImgExport, Calibrateable
 	public static boolean saveTiffStack( final ImagePlus imp, final String path )
 	{
 		FileInfo fi = imp.getFileInfo();
+		IOFunctions.println(fi);
+		IOFunctions.println(imp.getTitle());
+		IOFunctions.println(path);
 		boolean virtualStack = imp.getStack().isVirtual();
 		if (virtualStack)
 			fi.virtualStack = (VirtualStack)imp.getStack();

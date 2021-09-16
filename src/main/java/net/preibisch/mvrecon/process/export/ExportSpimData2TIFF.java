@@ -108,6 +108,7 @@ public class ExportSpimData2TIFF implements ImgExport
 			final double max )
 	{
 		// write the image
+		IOFunctions.println("In ExportSpimData2TIFF");
 		if ( !this.saver.exportImage( img, bb, downsampling, anisoF, title, fusionGroup, min, max ) )
 			return false;
 
@@ -148,7 +149,11 @@ public class ExportSpimData2TIFF implements ImgExport
 		try
 		{
 			io.save( newSpimData, new File( params.getXMLFile() ).getAbsolutePath() );
+<<<<<<< Updated upstream
 			IOFunctions.println(params.getXMLFile());
+=======
+
+>>>>>>> Stashed changes
 			IOFunctions.println( "(" + new Date( System.currentTimeMillis() ) + "): Saved xml '" + io.lastFileName() + "'." );
 
 			// this spimdata object was not modified, we just wrote a new one

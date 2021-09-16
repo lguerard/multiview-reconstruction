@@ -97,6 +97,7 @@ public class Resave_TIFF implements PlugIn
 	@Override
 	public void run( final String arg0 )
 	{
+		IOFunctions.println("Here");
 		final LoadParseQueryXML lpq = new LoadParseQueryXML();
 
 		if ( !lpq.queryXML( "Resaving as TIFF", "Resave", true, true, true, true, true ) )
@@ -106,7 +107,10 @@ public class Resave_TIFF implements PlugIn
 		progressWriter.out().println( "starting export..." );
 
 		final Parameters params = getParameters();
+<<<<<<< Updated upstream
 		IOFunctions.println(params.getXMLFile());
+=======
+>>>>>>> Stashed changes
 
 		if ( params == null )
 			return;
@@ -181,6 +185,7 @@ public class Resave_TIFF implements PlugIn
 
 	public static Parameters getParameters()
 	{
+		IOFunctions.println("In get")
 		final GenericDialogPlus gd = new GenericDialogPlus( "Resave dataset as TIFF" );
 
 		if ( defaultPath == null )
@@ -222,6 +227,10 @@ public class Resave_TIFF implements PlugIn
 		else
 			IOFunctions.println( new Date( System.currentTimeMillis() ) + ": Saving TIFFS to directory '" + path + "'" );
 
+<<<<<<< Updated upstream
+=======
+		IOFunctions.println(path);
+>>>>>>> Stashed changes
 		final Save3dTIFF save = new Save3dTIFF( path, compress );
 
 		final int numAngles = SpimData2.getAllAnglesSorted( spimData, viewIds ).size();
