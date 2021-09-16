@@ -31,6 +31,7 @@ import java.util.Date;
 
 import fiji.util.gui.GenericDialogPlus;
 import ij.ImagePlus;
+import ij.measure.Calibration;
 import ij.VirtualStack;
 import ij.io.FileInfo;
 import ij.io.FileSaver;
@@ -41,6 +42,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import net.preibisch.legacy.io.IOFunctions;
+import net.preibisch.legacy.io.ReadXMLValue;
 import net.preibisch.mvrecon.fiji.plugin.fusion.FusionExportInterface;
 import net.preibisch.mvrecon.fiji.plugin.resave.PluginHelper;
 import net.preibisch.mvrecon.fiji.plugin.resave.Resave_TIFF;
@@ -70,6 +72,11 @@ public class Save3dTIFF implements ImgExport, Calibrateable
 		exportImage( img, null, Double.NaN, Double.NaN, title, null );
 	}
 
+	public < T extends RealType< T > & NativeType< T > > void exportImage( final RandomAccessibleInterval< T > img, final String title, final String xml_path, final Integer index )
+	{
+		exportImage( img, null, Double.NaN, Double.NaN, title, null, xml_path, index );
+	}
+
 	@Override
 	public < T extends RealType< T > & NativeType< T > > boolean exportImage(
 			final RandomAccessibleInterval< T > img,
@@ -81,6 +88,20 @@ public class Save3dTIFF implements ImgExport, Calibrateable
 	{
 		return exportImage( img, bb, downsampling, anisoF, title, fusionGroup, Double.NaN, Double.NaN );
 	}
+
+	public < T extends RealType< T > & NativeType< T > > boolean exportImage(
+			final RandomAccessibleInterval< T > img,
+			final Interval bb,
+			final double downsampling,
+			final double anisoF,
+			final String title,
+			final Group< ? extends ViewId > fusionGroup,
+			final String xml_path,
+			final Integer index )
+	{
+		return exportImage( img, bb, downsampling, anisoF, title, fusionGroup, Double.NaN, Double.NaN, xml_path, index );
+	}
+
 
 	public String getFileName( final String title )
 	{
@@ -117,10 +138,7 @@ public class Save3dTIFF implements ImgExport, Calibrateable
 		if ( img == null )
 			return false;
 
-<<<<<<< Updated upstream
-=======
 
->>>>>>> Stashed changes
 		// determine min and max
 		final double[] minmax = DisplayImage.getFusionMinMax( img, min, max );
 
@@ -129,12 +147,71 @@ public class Save3dTIFF implements ImgExport, Calibrateable
 		DisplayImage.setCalibration( imp, bb, downsampling, anisoF, cal, unit );
 
 		imp.updateAndDraw();
-		IOFunctions.println("Save3DTIFF");
-		IOFunctions.println(imp.getCalibration());
 
 		final String fileName = getFileName( title );
-		IOFunctions.println(title);
-		IOFunctions.println(fileName);
+
+		IOFunctions.println( new Date( System.currentTimeMillis() ) + ": Saving file " + fileName );
+
+		final boolean success;
+
+		if ( compress )
+			success = new FileSaver( imp ).saveAsZip( fileName );
+		else
+			success = saveTiffStack( imp, fileName ); //new FileSaver( imp ).saveAsTiffStack( fileName );
+
+		if ( success )
+			IOFunctions.println( new Date( System.currentTimeMillis() ) + ": Saved file " + fileName );
+		else
+			IOFunctions.println( new Date( System.currentTimeMillis() ) + ": FAILED saving file " + fileName );
+
+		return success;
+	}
+
+	public <T extends RealType<T> & NativeType<T>> boolean exportImage(
+			final RandomAccessibleInterval<T> img,
+			final Interval bb,
+			final double downsampling,
+			final double anisoF,
+			final String title,
+			final Group< ? extends ViewId > fusionGroup,
+			final double min,
+			final double max,
+			final String xml_path,
+			final Integer index )
+	{
+		// do nothing in case the image is null
+		if ( img == null )
+			return false;
+
+		Calibration imp_cal = new Calibration();
+
+		final ReadXMLValue readXML = new ReadXMLValue( xml_path );
+		String unit = readXML.getValue( "unit", index );
+		String pixel_cal = readXML.getValue( "size", index );
+
+		String[] pixels_cal = pixel_cal.split(" ");
+		float[] numbers = new float[pixels_cal.length];
+		for (int i = 0; i < pixels_cal.length; ++i) {
+			float number = Float.parseFloat(pixels_cal[i]);
+			numbers[i] = number;
+		}
+
+		imp_cal.setUnit(unit);
+		imp_cal.pixelWidth = numbers[0];
+		imp_cal.pixelHeight = numbers[1];
+		imp_cal.pixelDepth = numbers[2];
+
+		// determine min and max
+		final double[] minmax = DisplayImage.getFusionMinMax( img, min, max );
+
+		final ImagePlus imp = DisplayImage.getImagePlusInstance( img, true, title, minmax[ 0 ], minmax[ 1 ] );
+		imp.setCalibration(imp_cal);
+
+		DisplayImage.setCalibration( imp, bb, downsampling, anisoF, cal, unit );
+
+		imp.updateAndDraw();
+
+		final String fileName = getFileName( title );
 
 		IOFunctions.println( new Date( System.currentTimeMillis() ) + ": Saving file " + fileName );
 
@@ -160,9 +237,7 @@ public class Save3dTIFF implements ImgExport, Calibrateable
 	public static boolean saveTiffStack( final ImagePlus imp, final String path )
 	{
 		FileInfo fi = imp.getFileInfo();
-		IOFunctions.println(fi);
-		IOFunctions.println(imp.getTitle());
-		IOFunctions.println(path);
+
 		boolean virtualStack = imp.getStack().isVirtual();
 		if (virtualStack)
 			fi.virtualStack = (VirtualStack)imp.getStack();
