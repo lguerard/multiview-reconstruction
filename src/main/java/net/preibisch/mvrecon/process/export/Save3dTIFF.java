@@ -207,7 +207,7 @@ public class Save3dTIFF implements ImgExport, Calibrateable
 		final ImagePlus imp = DisplayImage.getImagePlusInstance( img, true, title, minmax[ 0 ], minmax[ 1 ] );
 		imp.setCalibration(imp_cal);
 
-		DisplayImage.setCalibration( imp, bb, downsampling, anisoF, cal, unit );
+		DisplayImage.setCalibration( imp, bb, downsampling, anisoF, numbers[0], unit );
 
 		imp.updateAndDraw();
 
